@@ -141,7 +141,11 @@ class SPDAppState extends State<SPDApp> {
   @override
   Widget build(final BuildContext context) {
     return SolanaWalletProvider.create(
-      identity: AppIdentity(),
+      identity: AppIdentity(
+        uri: Uri.parse('https://stakepoollotto.com'),
+        icon: Uri.parse('favicon.png'),
+        name: 'Stake Pool Drops',
+      ), 
       cluster: Cluster.devnet,
       child: FutureBuilder(
         future: _futureDependencies,

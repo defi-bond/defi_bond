@@ -89,11 +89,6 @@ class SPDHomeScreenState extends State<SPDHomeScreen> {
               child: ListView(
                 shrinkWrap: true,
                 children: [
-
-                  TextButton(onPressed: () {
-                    final x = LottoProgram.findATA(LottoSeed.fee);
-                    print('FEE ATA = ${x.publicKey}');
-                  }, child: Text('Fee Ata')),
                   const SPDJackpot(),
                   const SizedBox(
                     height: SPDGrid.x4,
