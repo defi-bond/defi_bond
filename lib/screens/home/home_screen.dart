@@ -3,8 +3,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:solana_wallet_provider/solana_wallet_provider.dart';
-import 'package:stake_pool_lotto/programs/lotto/program.dart';
-import 'package:stake_pool_lotto/programs/lotto/state.dart';
 import 'package:synchronized/synchronized.dart';
 import '../../layouts/grid.dart';
 import '../../layouts/padding.dart';
@@ -71,6 +69,24 @@ class SPDHomeScreenState extends State<SPDHomeScreen> {
     }
   }
 
+  Widget _devWarning() {
+    return ColoredBox(
+      color: Colors.red,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Padding(
+            padding: SPDEdgeInsets.shared.symmetric(
+              vertical: 2,
+              horizontal: SPDGrid.x3,
+            ),
+            child: Text('RUNNING ON DEVNET!', style: TextStyle(fontSize: 12),),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Build the final widget.
   /// @param [context]: The current build context.
   @override
@@ -78,26 +94,33 @@ class SPDHomeScreenState extends State<SPDHomeScreen> {
     return RefreshIndicator(
       onRefresh: _onRefreshTokenBalances,
       child: SafeArea(
-        child: Padding(
-          padding: SPDEdgeInsets.shared.symmetric(
-            vertical: SPDGrid.x3,
-            horizontal: SPDGrid.x3,
-          ),
-          child: Center(
-            child: ScrollConfiguration(
-              behavior: MaterialScrollBehavior().copyWith(overscroll: false),
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  const SPDJackpot(),
-                  const SizedBox(
-                    height: SPDGrid.x4,
+        child: Column(
+          children: [
+            _devWarning(),
+            Expanded(
+              child: Padding(
+                padding: SPDEdgeInsets.shared.symmetric(
+                  vertical: SPDGrid.x3,
+                  horizontal: SPDGrid.x3,
+                ),
+                child: Center(
+                  child: ScrollConfiguration(
+                    behavior: MaterialScrollBehavior().copyWith(overscroll: false),
+                    child: ListView(
+                      shrinkWrap: true,
+                      children: [
+                        const SPDJackpot(),
+                        const SizedBox(
+                          height: SPDGrid.x4,
+                        ),
+                        SPDWallet(),
+                      ],
+                    ),
                   ),
-                  SPDWallet(),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );
