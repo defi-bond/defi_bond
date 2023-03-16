@@ -1,5 +1,5 @@
 name: stake_pool_lotto
-description: A new Flutter project.
+description: Winner takes all Stake Pool.
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -38,8 +38,8 @@ dependencies:
   path_provider: ^2.0.11
   provider: ^6.0.5
   shared_preferences: ^2.0.15
-  solana_wallet_provider: #^0.0.6
-    path: ../../../Solana/solana_wallet_provider
+  solana_wallet_provider: ^0.0.7
+    # path: ../../../Solana/solana_wallet_provider
   synchronized: ^3.0.1
   uuid: ^3.0.6
 

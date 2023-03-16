@@ -91,7 +91,7 @@ Future<InstructionData> withdraw({
     StakeProgram.space,
   );
 
-  final int availableReserveBalance = reserveStakeBalance - minBalanceForRentExemption - 1 - solToLamports(100).toInt();
+  final int availableReserveBalance = reserveStakeBalance - minBalanceForRentExemption - solToLamports(1).toInt();
   return  amount < availableReserveBalance.toBigInt()
     ? withdrawSol(
         wallet: wallet, 

@@ -56,9 +56,9 @@ class _SPDWalletState extends State<SPDWallet> {
     return Column(
       children: [
         SolanaWalletButton(
-          connectStyle: SPDPrimaryButton.defaultNoneStyle(),
-          disconnectStyle: SPDPrimaryButton.defaultStyle(),
-          connectBuilder: (context, account) {
+          connectedStyle: SPDPrimaryButton.defaultNoneStyle(),
+          disconnectedStyle: SPDPrimaryButton.defaultStyle(),
+          connectedBuilder: (context, account) {
             return SPDWalletCard(
               account: account,
               balance: totalBalance,
