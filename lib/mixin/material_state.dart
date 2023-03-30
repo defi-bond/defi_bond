@@ -26,13 +26,13 @@ mixin SPDMaterialState<T extends MaterialStateProperty> {
   /// Return the color value for the [MaterialState.pressed] state.
   /// @param [color]: The default color.
   Color pressedColor(final Color color) {
-    return color.darken();
+    return color.lighten();
   }
 
   /// Return the color value for the [MaterialState.selected] state.
   /// @param [color]: The default color.
   Color selectedColor(final Color color) {
-    return color.darken();
+    return color.lighten();
   }
 
   /// Return the [Color] for the given [states].

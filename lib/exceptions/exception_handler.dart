@@ -73,9 +73,8 @@ class SPDExceptionHandler {
 
   /// Parse [exception] and return a known error message or `null` if no known error is found.
   /// @param [exception]?: Any exception value.
-  String? _parseException(dynamic? exception) {
+  String? _parseException(dynamic exception) {
     print('PARSE EXCEPTION: ${exception.toString()} - $exception');
-    print('ISJSON EXCEPTION: ${exception is JsonRpcException}');
     if (exception is JsonRpcException) {
       return _jsonRpcException(exception);
     } else if (exception is SPDException) {

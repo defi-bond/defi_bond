@@ -3,7 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter/services.dart' show SystemChrome, SystemUiOverlayStyle;
+import 'package:flutter/services.dart' show DeviceOrientation, SystemChrome, SystemUiOverlayStyle;
 import 'colors/color.dart';
 import 'fonts/font.dart';
 import '../extensions/text_style.dart';
@@ -39,6 +39,12 @@ class SPDTheme {
     /// singleton classes.
     SPDColor.shared.apply(brightness);
 
+    /// Portrait only.
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     /// Get the inverse brightness value.
     Brightness contrastBrightness = brightness == Brightness.dark 
       ? Brightness.light 
@@ -47,7 +53,7 @@ class SPDTheme {
     /// Set the status/navigation bar styling.
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        statusBarColor: SPDColor.shared.primary1,
         statusBarIconBrightness: contrastBrightness,
         systemNavigationBarColor: SPDColor.shared.primary1,
         systemNavigationBarIconBrightness: contrastBrightness,
@@ -56,22 +62,29 @@ class SPDTheme {
 
     /// Define the application's text theme.
     final TextTheme textTheme = TextTheme(
-      headlineLarge: SPDFont.shared.headline1,
-      headlineMedium: SPDFont.shared.headline2,
-      headlineSmall: SPDFont.shared.headline3,
-      titleLarge: SPDFont.shared.headline2,
-      titleMedium: SPDFont.shared.headline3.medium(),
-      titleSmall: SPDFont.shared.headline4.medium(),
-      bodyLarge: SPDFont.shared.body1,
-      bodyMedium: SPDFont.shared.body2,
-      bodySmall: SPDFont.shared.body2,
+      displayLarge: SPDFont.shared.displayLarge,
+      displayMedium: SPDFont.shared.displayMedium,
+      displaySmall: SPDFont.shared.displaySmall,
+      headlineLarge: SPDFont.shared.headlineLarge,
+      headlineMedium: SPDFont.shared.headlineMedium,
+      headlineSmall: SPDFont.shared.headlineSmall,
+      titleLarge: SPDFont.shared.titleLarge,
+      titleMedium: SPDFont.shared.titleMedium,
+      titleSmall: SPDFont.shared.titleSmall,
+      bodyLarge: SPDFont.shared.bodyLarge,
+      bodyMedium: SPDFont.shared.bodyMedium,
+      bodySmall: SPDFont.shared.bodySmall,
+      labelLarge: SPDFont.shared.labelLarge,
+      labelMedium: SPDFont.shared.labelMedium,
+      labelSmall: SPDFont.shared.labelSmall,
     );
 
     /// The text style for tabs.
-    final TextStyle tabStyle = SPDFont.shared.body5.withAdjustedHeight();
+    final TextStyle tabStyle = SPDFont.shared.labelMedium.withAdjustedHeight();
     
     /// Return the application's theme data.
     return ThemeData(
+      brightness: brightness,
       progressIndicatorTheme: ProgressIndicatorThemeData(
         circularTrackColor: SPDColor.shared.brand,
         color: SPDColor.shared.primary1,
@@ -86,7 +99,7 @@ class SPDTheme {
       dividerTheme: DividerThemeData(
         color: SPDColor.shared.divider,
         space: 0.0,
-        thickness: 1.0,
+        thickness: 2.0,
       ),
       focusColor: SPDColor.shared.overlay,
       hoverColor: SPDColor.shared.overlay,
@@ -103,10 +116,10 @@ class SPDTheme {
           borderRadius: BorderRadius.circular(SPDGrid.x3),
         ),
         contentPadding: SPDEdgeInsets.shared.horizontal(),
-        errorStyle: SPDFont.shared.body3.medium(color: SPDColor.shared.error),
+        errorStyle: SPDFont.shared.bodySmall.medium(color: SPDColor.shared.error),
         fillColor: SPDColor.shared.primary2,
         filled: true,
-        hintStyle: SPDFont.shared.body1.setColor(SPDColor.shared.watermark),
+        hintStyle: SPDFont.shared.bodyMedium.setColor(SPDColor.shared.watermark),
         labelStyle: textTheme.bodyMedium,
       ),
       primaryTextTheme: textTheme,
@@ -114,7 +127,7 @@ class SPDTheme {
       snackBarTheme: SnackBarThemeData(
         actionTextColor: SPDColor.shared.primary1,
         backgroundColor: SPDColor.shared.brand1,
-        contentTextStyle: SPDFont.shared.body2.setColor(SPDColor.shared.primary1),
+        contentTextStyle: SPDFont.shared.bodyMedium.setColor(SPDColor.shared.primary1),
         disabledActionTextColor: SPDColor.shared.watermark,
       ),
       splashColor: SPDColor.shared.overlay,
@@ -137,14 +150,25 @@ class SPDTheme {
       textSelectionTheme: TextSelectionThemeData(
         cursorColor: SPDColor.shared.secondary6,
         selectionColor: SPDColor.shared.primary4,
-        selectionHandleColor: SPDColor.shared.brand2,
+        selectionHandleColor: SPDColor.shared.brand1,
       ),
       cardTheme: CardTheme(
         elevation: 0,
-        color: SPDColor.shared.divider,
+        color: SPDColor.shared.primary2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(SPDGrid.x1),
         ),
+      ),
+      iconTheme: IconThemeData(
+        size: SPDGrid.x2,
+        color: SPDColor.shared.font,
+      ),
+      listTileTheme: ListTileThemeData(
+        contentPadding: EdgeInsets.zero,
+        horizontalTitleGap: SPDGrid.x2,
+        minVerticalPadding: 0.0,
+        visualDensity: VisualDensity.compact,
+        minLeadingWidth: SPDGrid.x3,
       ),
       textTheme: textTheme,
     );

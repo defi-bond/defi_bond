@@ -5,72 +5,64 @@ import 'dart:math' as math;
 import 'package:solana_wallet_provider/solana_wallet_provider.dart';
 import '../../constants.dart';
 import '../../exceptions/exception.dart';
+import '../../programs/stake_pool/update.dart';
 import '../../programs/stake_pool/utils.dart';
-
-
-/// Withdraw Account Type
-/// ------------------------------------------------------------------------------------------------
-
-enum WithdrawAccountType {
-  preferred,
-  active,
-  transient,
-  reserved,
-}
-
-
-/// Withdraw Account
-/// ------------------------------------------------------------------------------------------------
-
-class WithdrawAccount {
-
-  const WithdrawAccount({
-    required this.type,
-    required this.stakeAddress,
-    this.voteAddress,
-    required this.amount,
-  });
-
-  final WithdrawAccountType type;
-  final PublicKey stakeAddress;
-  final PublicKey? voteAddress;
-  final BigInt amount;
-
-  WithdrawAccount copyWithAmount(final BigInt amount) => WithdrawAccount(
-    type: type, 
-    stakeAddress: stakeAddress,
-    voteAddress: voteAddress, 
-    amount: amount,
-  );
-}
+import 'models.dart';
 
 
 /// Withdraw
 /// ------------------------------------------------------------------------------------------------
 
-Future<InstructionData> withdraw({
+Future<List<TransactionWithSigners>> withdraw({
   required final SolanaWalletProvider provider,
-  required final Connection connection,
-  required final PublicKey wallet,
-  required final StakePool stakePool,
-  required final ValidatorList validatorList,
-  required final PublicKey tokenAccount,
-  required final PublicKey withdrawAccount,
   required final BigInt amount,
 }) async {
-
-  // Map base-58 public keys.
-  final PublicKey reserveStake = PublicKey.fromBase58(stakePool.reserveStake);
-  final PublicKey poolMint = PublicKey.fromBase58(stakePool.poolMint);
 
   // The JSON RPC connection.
   final Connection connection = provider.connection;
 
-  // Fetch the user's `stake pool lotto` token account info.
+  // Get the user account connected to the app.
+  final Account? connectedAccount = provider.connectedAccount;
+
+  // Check that the user account has been authorized by the app.
+  if (connectedAccount == null) {
+    throw const SPDException('No wallet connected.');
+  }
+
+  // Get the user account public key address.
+  final PublicKey wallet = PublicKey.fromBase64(connectedAccount.address);
+
+  // Fetch the stake pool's account data.
+  final StakePool stakePool = await getStakePool(connection, stakePoolAddress);
+  final PublicKey mintAccount = PublicKey.fromBase58(stakePool.poolMint);
+  final PublicKey validatorListAccount = PublicKey.fromBase58(stakePool.validatorList);
+  final PublicKey reserveAccount = PublicKey.fromBase58(stakePool.reserveStake);
+  final PublicKey managerFeeAccount = PublicKey.fromBase58(stakePool.managerFeeAccount);
+
+  /// Fetch the stake pool's validator list.
+  final ValidatorList validatorList = await getValidatorList(connection, validatorListAccount);
+
+  /// Check that the pool contains at least one validator.
+  if (validatorList.validators.isEmpty) {
+    throw const SPDException('No validators found, please try again soon.');
+  }
+
+  // Get the stake pool's withdraw address.
+  final PublicKey withdrawAccount = StakePoolProgram.findWithdrawAuthorityProgramAddress(
+    stakePoolAddress,
+  ).publicKey;
+
+  // Get the user's stake pool token address.
+  final PublicKey tokenAccount = PublicKey.findAssociatedTokenAddress(
+    wallet, 
+    mintAccount,
+  ).publicKey;
+
+  // Fetch the user's token account info.
   final TokenAccountInfo? tokenAccountInfo = await getTokenAccountInfo(
     connection, 
     tokenAccount, 
-    poolMint,
+    mintAccount,
   );
 
   // Check that the token account exists.
@@ -84,106 +76,87 @@ Future<InstructionData> withdraw({
   }
 
   // Fetch the reserve stake account info.
-  final int reserveStakeBalance = await connection.getBalance(reserveStake);
-
-  /// Fetch the rent exemption amount for a (validator) stake account.
-  final int minBalanceForRentExemption = await connection.getMinimumBalanceForRentExemption(
-    StakeProgram.space,
+  final ReserveStakeBalance reserveStakeBalance = await getReserveStakeBalance(
+    connection, 
+    address: reserveAccount,
   );
 
-  final int availableReserveBalance = reserveStakeBalance - minBalanceForRentExemption - solToLamports(1).toInt();
-  return  amount < availableReserveBalance.toBigInt()
-    ? withdrawSol(
-        wallet: wallet, 
-        amount: amount, 
-        stakePool: stakePool,
-        tokenAccount: tokenAccount,
-        withdrawAccount: withdrawAccount,
-      )
-    : await withdrawStake(
-        wallet: wallet,
-        connection: connection, 
-        amount: amount, 
-        stakePool: stakePool,
-        validatorList: validatorList, 
-        tokenAccount: tokenAccount,
-        withdrawAccount: withdrawAccount,
-        reserveStakeAvailableBalance: availableReserveBalance,
-        minBalanceForRentExemption: minBalanceForRentExemption,
-      );
-}
+  // Transactions.
+  late final List<TransactionWithSigners> transactions;
 
-
-/// Withdraw Stake
-/// ------------------------------------------------------------------------------------------------
-
-InstructionData withdrawSol({
-  required final PublicKey wallet,
-  required final BigInt amount,
-  required final StakePool stakePool,
-  required final PublicKey tokenAccount, 
-  required final PublicKey withdrawAccount, 
-}) {
-  final List<TransactionInstruction> instructions = [];
-
-  final PublicKey reserveStake = PublicKey.fromBase58(stakePool.reserveStake);
-  final PublicKey managerFeeAccount = PublicKey.fromBase58(stakePool.managerFeeAccount);
-  final PublicKey poolMint = PublicKey.fromBase58(stakePool.poolMint);
-
-  instructions.add(
-    StakePoolProgram.withdrawSol(
-      stakePoolAddress: stakePoolAddress, 
-      withdrawAuthority: withdrawAccount, 
-      userTransferAuthority: wallet, 
-      userTokenAccount: tokenAccount, 
-      reserveStake: reserveStake, 
-      receiverAccount: wallet, 
-      receiverTokenAccount: managerFeeAccount, 
-      poolMint: poolMint, 
+  final int availableReserveBalance = reserveStakeBalance.availableBalance;
+  if (amount < availableReserveBalance.toBigInt()) {
+    transactions = [
+      TransactionWithSigners(
+        transaction: Transaction(
+          instructions: [
+            StakePoolProgram.withdrawSol(
+              stakePoolAddress: stakePoolAddress, 
+              withdrawAuthority: withdrawAccount, 
+              userTransferAuthority: wallet, 
+              userTokenAccount: tokenAccount, 
+              reserveStake: reserveAccount, 
+              receiverAccount: wallet, 
+              receiverTokenAccount: managerFeeAccount, 
+              poolMint: mintAccount, 
+              lamports: amount,
+            ),
+          ],
+        ),
+      ),
+    ];
+  } else {
+    transactions = await _withdrawStake(
+      wallet: wallet,
+      connection: connection, 
+      stakePool: stakePool,
+      validatorList: validatorList, 
+      validatorListAccount: validatorListAccount,
+      withdrawAccount: withdrawAccount,
+      tokenAccount: tokenAccount,
+      managerFeeAccount: managerFeeAccount,
+      mintAccount: mintAccount,
+      reserveStakeBalance: reserveStakeBalance,
       lamports: amount,
-    )
-  );
+    );
+  }
 
-  return InstructionData(
-    instructions: instructions,
-  );
+  await updateStakePoolRemote(connection, stakePool: stakePool);
+
+  return transactions;
 }
 
 
 /// Withdraw Stake
 /// ------------------------------------------------------------------------------------------------
 
-Future<InstructionData> withdrawStake({
+Future<List<TransactionWithSigners>> _withdrawStake({
   required final PublicKey wallet,
   required final Connection connection,
-  required final BigInt amount,
   required final StakePool stakePool,
   required final ValidatorList validatorList,
-  required final PublicKey tokenAccount, 
-  required final PublicKey withdrawAccount, 
-  required final int reserveStakeAvailableBalance,
-  required final int minBalanceForRentExemption,
+  required final PublicKey validatorListAccount,
+  required final PublicKey withdrawAccount,
+  required final PublicKey tokenAccount,  
+  required final PublicKey managerFeeAccount, 
+  required final PublicKey mintAccount, 
+  required final ReserveStakeBalance reserveStakeBalance,
+  required final BigInt lamports,
 }) async {
-  final List<TransactionInstruction> instructions = [];
-
-  // Map base-58 public key strings.
-  final PublicKey poolValidatorList = PublicKey.fromBase58(stakePool.validatorList);
-  final PublicKey poolManagerFeeAccount = PublicKey.fromBase58(stakePool.managerFeeAccount);
-  final PublicKey poolMint = PublicKey.fromBase58(stakePool.poolMint);
 
   // Minimum balance required for a stake account.
-  final int minBalance = minBalanceForRentExemption + StakePoolProgram.minimumActiveStake;
+  final int minBalance = reserveStakeBalance.minBalanceForRentExemption 
+    + StakePoolProgram.minimumActiveStake;
 
-  final List<WithdrawAccount> accounts = withdrawAccounts(
+  final List<WithdrawAccount> accounts = _withdrawAccounts(
     stakePool: stakePool,
     validatorList: validatorList, 
-    amount: amount,
-    minBalance: minBalance.toBigInt(),
-    reserveStakeAvailableBalance: reserveStakeAvailableBalance,
+    amount: lamports,
+    minStakeBalance: minBalance.toBigInt(),
+    reserveStakeBalance: reserveStakeBalance,
   );
 
-  // final userTransferAuthority = Keypair.generate();
-  final List<Signer> signers = [];
+  // final userTransferAuthority = Keypair.generateSync();
 
   // instructions.add(
   //   TokenProgram.approve(
@@ -194,13 +167,13 @@ Future<InstructionData> withdrawStake({
   //   ),
   // );
 
-  final int minDelegation = await connection.getStakeMinimumDelegation();
-  print('MIN DELEGATION         $minDelegation');
-  print('MIN DELEGATION         ${lamportsToSol(minDelegation.toBigInt())} SOL');
 
-  // Max 5 accounts to prevent an error: "Transaction too large"
+  final List<TransactionWithSigners> transactions = [];
+  List<TransactionInstruction> instructions = [];
+  List<Signer> signers = [];
+  // Max 5 accounts per transaction to prevent error: "Transaction too large"
   final int maxWithdrawAccounts = math.min(5, accounts.length);
-  for (int i = 0; i < maxWithdrawAccounts; ++i) {
+  for (int i = 0; i < accounts.length; ++i) {
     final WithdrawAccount account = accounts[i];
     print('ACCOUNT TYPE   ${account.type}');
     print('ACCOUNT ADDRES ${account.stakeAddress}');
@@ -208,59 +181,75 @@ Future<InstructionData> withdrawStake({
     print('ACCOUNT INDEX  ${instructions.length}');
     final Keypair stakeAccountKeypair = Keypair.generateSync();
     signers.add(stakeAccountKeypair);
+
     instructions.add(
       SystemProgram.createAccount(
         fromPublicKey: wallet,
         newAccountPublicKey: stakeAccountKeypair.publicKey,
-        lamports: minBalanceForRentExemption.toBigInt(),
+        lamports: reserveStakeBalance.minBalanceForRentExemption.toBigInt(),
         space: StakeProgram.space.toBigInt(),
         programId: StakeProgram.programId,
       ),
     );
+
     instructions.add(
       StakePoolProgram.withdrawStake(
         stakePoolAddress: stakePoolAddress, 
-        validatorList: poolValidatorList, 
+        validatorList: validatorListAccount, 
         withdrawAuthority: withdrawAccount, 
         validatorOrReserveStakeAccount: account.stakeAddress, 
         unitializedStakeAccount: stakeAccountKeypair.publicKey, 
         userWithdrawAuthority: wallet, 
-        userTransferAuthority: wallet,// userTransferAuthority.publicKey, 
+        userTransferAuthority: wallet, //userTransferAuthority.publicKey, 
         userTokenAccount: tokenAccount, 
-        managerFeeAccount: poolManagerFeeAccount, 
-        poolMint: poolMint, 
+        managerFeeAccount: managerFeeAccount, 
+        poolMint: mintAccount, 
         lamports: account.amount,
       ),
     );
+    print('ADD C0 = ${signers.length % maxWithdrawAccounts}');
+    print('ADD C1 = ${(i+1) == accounts.length}');
+    if ((signers.length % maxWithdrawAccounts) == 0 || (i+1) == accounts.length) {
+      transactions.add(
+        TransactionWithSigners(
+          transaction: Transaction(
+            instructions: instructions,
+          ),
+          signers: signers,
+        ),
+      );
+      signers = [];
+      instructions = [];
+    }
   }
 
-  return InstructionData(
-    instructions: instructions,
-    signers: signers,
-  );
+  return transactions;
 }
 
 
 /// Withdraw Accounts
 /// ------------------------------------------------------------------------------------------------
 
-List<WithdrawAccount> withdrawAccounts({
+List<WithdrawAccount> _withdrawAccounts({
   required final StakePool stakePool,
   required final ValidatorList validatorList,
   required final BigInt amount,
-  required final BigInt minBalance,
-  required final int reserveStakeAvailableBalance,
+  required final BigInt minStakeBalance,
+  required final ReserveStakeBalance reserveStakeBalance,
 }) {
+  // Active stake accounts with sufficient balance.
   final List<WithdrawAccount> accounts = [];
 
+  // Collect active stake accounts with sufficient balance.
   for (final ValidatorStakeInfo validator in validatorList.validators) {
     
-    if (validator.status != StakeStatus.active) {
-      continue;
-    }
+    // Active validators only.
+    if (validator.status != StakeStatus.active) continue;
 
+    // Validator vote account.
     final PublicKey voteAccountAddress = PublicKey.fromBase58(validator.voteAccountAddress);
 
+    // Active balance.
     if (validator.activeStakeLamports > BigInt.zero) {
       final bool isPreferred = (
         stakePool.preferredWithdrawValidatorVoteAddress == validator.voteAccountAddress
@@ -281,7 +270,8 @@ List<WithdrawAccount> withdrawAccounts({
       );
     }
 
-    final BigInt transientStakeLamports = validator.transientStakeLamports - minBalance;
+    // Transient balance.
+    final BigInt transientStakeLamports = validator.transientStakeLamports - minStakeBalance;
     if (transientStakeLamports > BigInt.zero) {
       final transientStakeAccountAddress = StakePoolProgram.findTransientStakeProgramAddress(
         voteAccountAddress,
@@ -299,18 +289,19 @@ List<WithdrawAccount> withdrawAccounts({
     }
   }
 
-  /// Sort by type and then balance.
+  // Sort by type and then balance.
   accounts.sort((a, b) {
     final int compare = a.type.index - b.type.index;
     return compare == 0 ? (b.amount - a.amount).toInt() : compare;
   });
 
-  if (reserveStakeAvailableBalance > 0) {
+  // Add reserve account.
+  if (reserveStakeBalance.availableBalance > 0) {
     accounts.add(
       WithdrawAccount(
         type: WithdrawAccountType.reserved, 
         stakeAddress: PublicKey.fromBase58(stakePool.reserveStake), 
-        amount: reserveStakeAvailableBalance.toBigInt(),
+        amount: reserveStakeBalance.availableBalance.toBigInt(),
       ),
     );
   }
@@ -327,31 +318,55 @@ List<WithdrawAccount> withdrawAccounts({
   }));
   print('\n');
 
+  // Withdrawal accounts.
   BigInt remainingAmount = amount;
   final List<WithdrawAccount> withdrawalAccounts = [];
-  final double feeRatio = stakePool.stakeWithdrawalFee.ratio;
+
+  // Fee applied to each withdrawal.
+  final Fee fee = stakePool.stakeWithdrawalFee;
+  final Fee inverseFee = Fee(
+    denominator: fee.denominator, 
+    numerator: fee.denominator - fee.numerator,
+  );
+
+  print('\nWITHDRAWAL AMOUNT $amount\n');
 
   for (final WithdrawAccount account in accounts) {
     
-    /// If the fee is not 0 (i.e. no fee), it needs to be removed from [account.amount].
-    assert(feeRatio == 0);
+    BigInt availableForWithdrawal = calcPoolTokensForDeposit(
+      stakePool: stakePool, 
+      stakeLamports: account.amount,
+    );
 
-    if (account.amount <= minBalance && account.type == WithdrawAccountType.transient) {
+    print('-\tAVAILABLE FOR WITHDRAWAL $availableForWithdrawal');
+
+    if (inverseFee.numerator != BigInt.zero) {
+      availableForWithdrawal = BigInt.from(
+        (availableForWithdrawal * inverseFee.denominator) / inverseFee.numerator
+      );
+    }
+
+    print('-\tFEE NUMERATOR ${inverseFee.numerator}');
+    print('-\tFEE DENOMINATOR ${inverseFee.denominator}');
+
+    final BigInt withdrawalAmount = minBigInt(availableForWithdrawal, remainingAmount);
+    if (withdrawalAmount <= BigInt.zero) {
+      print('\n');
       continue;
     }
-    
-    print('STAKE POOL TOKEN SUPPLY    ${stakePool.poolTokenSupply}');
-    print('STAKE POOL TOTAL LAMPORTS  ${stakePool.totalLamports}');
-    print('AVAILABLE WITHDRAW         ${calcPoolTokensForDeposit(stakePool: stakePool, stakeLamports: account.amount)}');
 
-    final BigInt withdrawalAmount = biMin(account.amount, remainingAmount);
-    print('WITHDRAW AMOUNT LAM (${account.type}) = $withdrawalAmount');
-    print('WITHDRAW AMOUNT SOL (${account.type}) = ${lamportsToSol(withdrawalAmount)} SOL');
+    print('-\tACCOUNT TO DEBIT TYPE ${account.type}');
+    print('-\tACCOUNT TO DEBIT STKE ${account.stakeAddress}');
+    print('-\tACCOUNT TO DEBIT VOTE ${account.voteAddress}');
+
+    print('-\tACCOUNT WITHDRAW AMOUNT DENOMINATOR ${withdrawalAmount}');
+
     withdrawalAccounts.add(account.copyWithAmount(withdrawalAmount));
     remainingAmount -= withdrawalAmount;
-    print('REMAINING AMOUNT = $remainingAmount');
 
-    if (remainingAmount == BigInt.zero) {
+    print('-\tREMAINING BALANCE ${remainingAmount}\n');
+
+    if (remainingAmount <= BigInt.zero) {
       break;
     }
   }

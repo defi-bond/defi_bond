@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import '../colors/color.dart';
+import '../../extensions/text_style.dart';
 
 
 /// Font
@@ -26,41 +27,53 @@ class SPDFont {
   /// The application's monospaced font family.
   final String monoFontFamily = 'Roboto';
 
-  /// Return the application's largest headline font style.
-  TextStyle get headline1 => bold(28.0);
+  /// The largest display font style.
+  TextStyle get displayLarge => medium(52.0);
 
-  /// Return the application's second largest headline font style.
-  TextStyle get headline2 => bold(24.0);
+  /// The regular display font style.
+  TextStyle get displayMedium=> medium(48.0);
 
-  /// Return the application's third largest headline font style.
-  TextStyle get headline3 => bold(20.0);
+  /// The smallest display font style.
+  TextStyle get displaySmall => medium(44.0);
 
-  /// Return the application's fourth largest headline font style.
-  TextStyle get headline4 => bold(18.0);
+  /// The largest headline font style.
+  TextStyle get headlineLarge => medium(40.0);
 
-  /// Return the application's fifth largest headline font style.
-  TextStyle get headline5 => bold(16.0);
+  /// The regular headline font style.
+  TextStyle get headlineMedium=> medium(36.0);
 
-  /// Return the application's largest body font style.
-  TextStyle get body1 => regular(18.0);
+  /// The smallest headline font style.
+  TextStyle get headlineSmall => medium(32.0);
 
-  /// Return the application's second largest body font style.
-  TextStyle get body2 => regular(16.0);
+  /// The largest title font style.
+  TextStyle get titleLarge => medium(28.0);
 
-  /// Return the application's third largest body font style.
-  TextStyle get body3 => regular(14.0);
+  /// The regular title font style.
+  TextStyle get titleMedium=> medium(24.0);
 
-  /// Return the application's fourth largest body font style.
-  TextStyle get body4 => regular(12.0);
+  /// The smallest title font style.
+  TextStyle get titleSmall => medium(20.0);
 
-  /// Return the application's fifth largest body font style.
-  TextStyle get body5 => regular(10.0);
+  /// The largest body font style.
+  TextStyle get bodyLarge => medium(18.0);
 
-  /// Return the application's smallest body font style.
-  TextStyle get body6 => regular(8.0);
+  /// The regular body font style.
+  TextStyle get bodyMedium=> medium(16.0);
+
+  /// The smallest body font style.
+  TextStyle get bodySmall => medium(14.0);
+
+  /// The largest label font style.
+  TextStyle get labelLarge => regular(16.0);
+
+  /// The regular label font style.
+  TextStyle get labelMedium=> regular(14.0);
+
+  /// The smallest label font style.
+  TextStyle get labelSmall => regular(12.0);
 
   /// Return the application's button font style.
-  TextStyle get button => medium(16.0);
+  TextStyle get button => bodyMedium.withAdjustedHeight();
 
   /// Create a [TextStyle] instance from the given parameters.
   /// @param [size]: The font size.

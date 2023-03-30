@@ -32,15 +32,16 @@ dependencies:
     sdk: flutter
   flutter_native_splash: ^2.2.19
   flutter_secure_storage: ^6.0.0
-  flutter_svg: ^1.1.6
   http: ^0.13.5
+  package_info_plus: ^3.0.3
   path: ^1.8.2
   path_provider: ^2.0.11
   provider: ^6.0.5
   shared_preferences: ^2.0.15
-  solana_wallet_provider: ^0.0.7
+  solana_wallet_provider: ^0.0.8
     # path: ../../../Solana/solana_wallet_provider
   synchronized: ^3.0.1
+  url_launcher: ^6.1.10
   uuid: ^3.0.6
 
 dev_dependencies:
@@ -54,10 +55,11 @@ flutter_icons:
   image_path: "assets/images/logo.png"
   min_sdk_android: 21 # android min sdk min:16, default 21
   remove_alpha_ios: true
+  fullscreen: true
 
 flutter_native_splash:
-  color: "#E61C51"
-  image: assets/splash.png
+  color: "#1E1E1F"
+  image: assets/images/splash_logo.png
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
@@ -80,7 +82,6 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/images/
-    - assets/splash.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -94,9 +95,9 @@ flutter:
   # list giving the asset and other descriptors for the font. For
   # example:
   fonts:
-  - family:  StakePoolLotto
+  - family:  DreamDrops
     fonts:
-      - asset: assets/fonts/stake_pool_lotto/StakePoolLotto.ttf
+      - asset: assets/fonts/dream_drops/DreamDrops.ttf
       
   - family:  Gilroy
     fonts:

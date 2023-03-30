@@ -15,7 +15,7 @@ class LottoProgram extends Program {
 
   /// Lotto program.
   LottoProgram._()
-    : super(PublicKey.fromBase58('5uhudfA5RKkoAt6Bku1VUeWuenPiaVAgoVZj4pBUssuS'));
+    : super(PublicKey.fromBase58('98iqnEfLWpWK69Yn7YAPnWvkCSZAUgkXeS4tciGjccHQ'));
   
   /// Internal singleton instance.
   static final LottoProgram _instance = LottoProgram._();

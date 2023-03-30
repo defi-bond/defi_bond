@@ -32,7 +32,7 @@ class SPLStatusColor extends ColorSwatch<int> {
       1: Color(0xFF33FFFF),
       2: Color(0xFFFFDD33),
       3: Color(0xFFFF3355),
-      4: Color(0xFF33FF99),
+      4: Color(0xFF66FFED),
     });
   }
 
@@ -43,7 +43,7 @@ class SPLStatusColor extends ColorSwatch<int> {
       1: Color(0xFF2EE8E8),
       2: Color(0xFFE8C92E),
       3: Color(0xFFE82E4D),
-      4: Color(0xFF2EE88B),
+      4: Color(0xFF66FFED),
     });
   }
 

@@ -14,8 +14,9 @@ enum SPLProviderStatus {
   
   uninitialized(0),
   initialized(20),
-  updated(40),
-  error(60),
+  updating(40),
+  updated(60),
+  error(80),
   ;
 
   const SPLProviderStatus(this.level);
@@ -42,6 +43,8 @@ abstract class SPLProvider<T extends SerializableMixin> extends ValueNotifier<T?
 
   bool get isUninitialized => status == SPLProviderStatus.uninitialized;
 
+  bool get isUpdating => status == SPLProviderStatus.updating;
+
   bool get isUpdated => status.level >= SPLProviderStatus.updated.level;
 
   @override
@@ -67,7 +70,11 @@ abstract class SPLProvider<T extends SerializableMixin> extends ValueNotifier<T?
     final SolanaWalletProvider provider, { 
     final SPLProviderStatus? notifyLevel, 
   }) async {
+    final currentStatus = status;
     try {
+      if (currentStatus.level < SPLProviderStatus.updating.level) {
+        status = SPLProviderStatus.updating;
+      }
       final T value = await fetch(provider);
       status = SPLProviderStatus.updated;
       this.value = value;
@@ -78,6 +85,7 @@ abstract class SPLProvider<T extends SerializableMixin> extends ValueNotifier<T?
         status = SPLProviderStatus.error;
         notifyListeners();
       } else {
+        status = currentStatus;
         rethrow;
       }
     }

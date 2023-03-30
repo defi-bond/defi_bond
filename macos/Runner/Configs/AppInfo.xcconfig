@@ -8,7 +8,7 @@
 PRODUCT_NAME = stake_pool_lotto
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.stakePoolLotto
+PRODUCT_BUNDLE_IDENTIFIER = com.example.dreamDrops
 
 // The copyright displayed in application information
 PRODUCT_COPYRIGHT = Copyright © 2023 com.example. All rights reserved.

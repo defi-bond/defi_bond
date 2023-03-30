@@ -1,15 +1,9 @@
 /// Imports
 /// ------------------------------------------------------------------------------------------------
 
-import 'dart:math' show min;
 import 'package:flutter/material.dart';
-import '../../extensions/text_style.dart';
-import '../../layouts/grid.dart';
-import '../../layouts/padding.dart';
-import '../../themes/colors/color.dart';
-import '../../themes/fonts/font.dart';
 import '../material/ink_response.dart';
-import '../material/material_state_color.dart';
+import '../../themes/colors/color.dart';
 
 
 /// Button
@@ -17,7 +11,7 @@ import '../material/material_state_color.dart';
 
 abstract class SPDButton extends StatefulWidget {
 
-  /// Create a button that is rendered using the defined [style].
+  /// Creates a button that is rendered using the defined [style].
   const SPDButton({
     super.key,
     required this.child,
@@ -27,12 +21,8 @@ abstract class SPDButton extends StatefulWidget {
     this.autofocus = false,
     this.enabled = true,
     this.expand = false,
-    this.padding,
+    required this.style,
     this.targetPadding,
-    this.minHeight,
-    this.color,
-    this.backgroundColor,
-    this.textStyle,
   });
 
   /// The button's main content.
@@ -57,65 +47,15 @@ abstract class SPDButton extends StatefulWidget {
   /// If `true`, fill the available width.
   final bool expand;
 
-  /// The button's inner padding (default [OAPadding.shared.horizontal()]).
-  final EdgeInsets? padding;
+  /// Button style.
+  final ButtonStyle style;
 
   /// The button's outer padding, used to increase its target area.
   final EdgeInsets? targetPadding;
 
-  /// The button's minimum height (default: [SPDGrid.x6]).
-  final double? minHeight;
+  /// Builds the button's content. This method is called each time the widget is built.
+  Widget? builder(final BuildContext context, final Size? minSize, final Color? color) => child;
 
-  /// The button's border and content color. This will override the default 
-  /// [ButtonStyle.foregroundColor] property defined by [style].
-  final Color? color;
-
-  /// The button's background color. This will override the default [ButtonStyle.backgroundColor] 
-  /// property defined by [style].
-  final Color? backgroundColor;
-
-  /// The button's text style.
-  final TextStyle? textStyle;
-
-  /// Return the radius of the button's smallest dimension.
-  double get minRadius {
-    return (minHeight ?? SPDGrid.x6) * 0.5;
-  }
-
-  /// Build the button's content. This method is called each time the widget is built.
-  /// @param [context]: The current build context.
-  /// @param [color]?: The content color ([color] or [ButtonStyle.foregroundColor]) for the 
-  /// current state. 
-  Widget? builder(BuildContext context, Color? color) => child;
-
-  /// Define the button's appearance for each [MaterialState]. This method is called each time the 
-  /// widget's dependencies change.
-  /// @param [context]: The current build context.
-  ButtonStyle style(BuildContext context) {
-    final double radius = minRadius;
-    final double borderRadius = min(radius, SPDGrid.x2);
-    return ButtonStyle(
-      backgroundColor: SPDMaterialStateColor.color(backgroundColor),
-      foregroundColor: SPDMaterialStateColor.color(color ?? SPDColor.shared.font),
-      minimumSize: MaterialStateProperty.all<Size>(Size.fromRadius(radius)),
-      overlayColor: MaterialStateProperty.all<Color>(SPDColor.shared.overlay),
-      padding: MaterialStateProperty.all<EdgeInsets>(padding ?? SPDEdgeInsets.shared.horizontal()),
-      shape: MaterialStateProperty.all(
-        const StadiumBorder(),
-      ),
-      // shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-      //   RoundedRectangleBorder(
-      //     borderRadius: BorderRadius.circular(borderRadius),
-      //   ),
-      // ),
-      tapTargetSize: MaterialTapTargetSize.padded,
-      textStyle: MaterialStateProperty.all(
-        textStyle ?? SPDFont.shared.button.withAdjustedHeight(),
-      ),
-    );
-  }
-
-  /// Create an instance of the class' state widget.
   @override
   SPDButtonState createState() => SPDButtonState();
 }
@@ -125,9 +65,6 @@ abstract class SPDButton extends StatefulWidget {
 /// ------------------------------------------------------------------------------------------------
 
 class SPDButtonState extends State<SPDButton> {
-
-  /// The button's styling.
-  late ButtonStyle _style;
 
   /// The button's current states.
   final Set<MaterialState> _states = <MaterialState>{};
@@ -158,18 +95,11 @@ class SPDButtonState extends State<SPDButton> {
     super.initState();
     _updateState(MaterialState.disabled, !_enabled);
   }
-  
-  /// Initialise the button's [_style] property.
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _style = widget.style(context);
-  }
 
   /// Update the widget's state.
   /// @param [oldWidget]: The widget's previous state.
   @override
-  void didUpdateWidget(covariant SPDButton oldWidget) {
+  void didUpdateWidget(covariant final SPDButton oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     /// Set the button's current state.
@@ -182,26 +112,18 @@ class SPDButtonState extends State<SPDButton> {
     if (_disabled && _pressed) {
       _onHighlightChanged(false);
     }
-
-    /// Update the button's style if any of the style properties have changed.
-    if (widget.minHeight != oldWidget.minHeight
-        || widget.padding != oldWidget.padding
-        || widget.color != oldWidget.color 
-        || widget.backgroundColor != oldWidget.backgroundColor) {
-      _style = widget.style(context);
-    }
   }
 
   /// Add or remove [state] from the widget's [_states] property.
   /// @param [state]: The state to enable or disable.
   /// @param [value]: If `true` add the state, else remove it.
-  void _updateState(MaterialState state, bool value) {
+  void _updateState(final MaterialState state, final bool value) {
     value ? _states.add(state) : _states.remove(state);
   }
 
   /// Toggle the button's [Material.pressed] state each time the touch event changes.
   /// @param [value]: If `true`, the button is being pressed.
-  void _onHighlightChanged(bool value) {
+  void _onHighlightChanged(final bool value) {
     if (_pressed != value) {
       setState(() => _updateState(MaterialState.pressed, value));
     }
@@ -209,7 +131,7 @@ class SPDButtonState extends State<SPDButton> {
 
   /// Toggle the button's [Material.focused] state each time its focus changes.
   /// @param [value]: If `true`, the button has gained focus.
-  void _onFocusChanged(bool value) {
+  void _onFocusChanged(final bool value) {
     if (_focused != value) {
       setState(() => _updateState(MaterialState.focused, value));
     }
@@ -218,16 +140,16 @@ class SPDButtonState extends State<SPDButton> {
   /// Build the final widget.
   /// @param [context]: The current build context.
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
 
     /// Resolve the button's style properties.
-    final TextStyle textStyle = _style.textStyle?.resolve(_states) ?? const TextStyle();
-    final Color? color = _style.foregroundColor?.resolve(_states) ?? SPDColor.shared.font;
-    final Color? backgroundColor = _style.backgroundColor?.resolve(_states);
-    final EdgeInsetsGeometry padding = _style.padding?.resolve(_states) ?? EdgeInsets.zero;
-    final Size minimumSize = _style.minimumSize?.resolve(_states) ?? const Size.fromRadius(24.0);
-    final BorderSide? side = _style.side?.resolve(_states);
-    final OutlinedBorder? shape = _style.shape?.resolve(_states);
+    final TextStyle textStyle = widget.style.textStyle?.resolve(_states) ?? const TextStyle();
+    final Color? color = widget.style.foregroundColor?.resolve(_states) ?? SPDColor.shared.font;
+    final Color? backgroundColor = widget.style.backgroundColor?.resolve(_states);
+    final EdgeInsetsGeometry padding = widget.style.padding?.resolve(_states) ?? EdgeInsets.zero;
+    final Size minimumSize = widget.style.minimumSize?.resolve(_states) ?? const Size.fromRadius(24.0);
+    final BorderSide? side = widget.style.side?.resolve(_states);
+    final OutlinedBorder? shape = widget.style.shape?.resolve(_states);
 
     /// Construct the button's content.
     Widget button = ConstrainedBox(
@@ -241,7 +163,7 @@ class SPDButtonState extends State<SPDButton> {
         padding: padding,
         child: Center(
           widthFactor: widget.expand ? null : 1.0,
-          child: widget.builder(context, color),
+          child: widget.builder(context, minimumSize, color),
         ),
       ),
     );
@@ -271,7 +193,7 @@ class SPDButtonState extends State<SPDButton> {
           autofocus: widget.autofocus,
           containedInkWell: true,
           canRequestFocus: _enabled,
-          overlayColor: _style.overlayColor,
+          overlayColor: widget.style.overlayColor,
           onTap: _enabled ? widget.onPressed : widget.onPressedDisabled,
           onHighlightChanged: _onHighlightChanged,
           onFocusChange: _onFocusChanged,

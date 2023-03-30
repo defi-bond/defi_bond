@@ -70,6 +70,7 @@ class JackpotProvider extends SPLProvider<JackpotInfo> {
   @override
   Future<JackpotInfo> fetch(final SolanaWalletProvider provider) async {
     final Connection connection = provider.connection;
+    print('JACKPOT ADDRESS ${ataAccountAddress.publicKey}');
     final AccountInfo? ataAccountInfo = await connection.getAccountInfo(
       ataAccountAddress.publicKey,
     );

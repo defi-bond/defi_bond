@@ -56,9 +56,6 @@ class SPDColor {
   /// Return the application's brand colour for the current theme.
   Color get brand1 => brand.shade1;
 
-  /// Return the brand colour swatch's darkest shade for the current theme.
-  Color get brand2 => brand.shade2;
-
   /// Return the primary colour swatch's first shade.
   Color get primary1 => primary.shade1;
 
@@ -126,7 +123,7 @@ class SPDColor {
   Color get overlay => const Color(0xFF000000).withAlpha(8);
 
   /// Return the divider line colour.
-  Color get divider => primary.shade2;
+  Color get divider => primary.shade4;
 
   /// Return the disabled colour.
   Color get disabled => primary.shade6;

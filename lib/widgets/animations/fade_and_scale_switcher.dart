@@ -18,21 +18,22 @@ class SPDFadeAndScaleSwitcher extends AnimatedSwitcher {
     required Widget? child,
     Alignment alignment = Alignment.center
   }): super(
-        key: key,
-        child: child,
-        duration: duration ?? SPDDuration.normal,
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return Align(
-            alignment: Alignment.centerLeft,
-            child: ScaleTransition(
-              scale: animation,
-              alignment: alignment,
-              child: FadeTransition(
-                opacity: animation,
-                child: child,
-              ),
-            ),
-          );
-        }
-      );
+    key: key,
+    child: child,
+    duration: duration ?? SPDDuration.normal,
+    transitionBuilder: (
+      final Widget child, 
+      final Animation<double> animation,
+    ) => Align(
+        alignment: Alignment.topCenter,
+        child: ScaleTransition(
+          scale: animation,
+          alignment: alignment,
+          child: FadeTransition(
+            opacity: animation,
+            child: child,
+          ),
+        ),
+      ),
+    );
 }

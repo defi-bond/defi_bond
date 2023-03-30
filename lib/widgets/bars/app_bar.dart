@@ -3,13 +3,13 @@
 
 import 'package:flutter/material.dart';
 import '../../extensions/text_style.dart';
-import '../../icons/stake_pool_drops_icons.dart';
+import '../../icons/dream_drops_icons.dart';
 import '../../layouts/grid.dart';
 import '../../layouts/padding.dart';
 import '../../navigator/navigator.dart';
 import '../../themes/colors/color.dart';
 import '../../themes/fonts/font.dart';
-import '../buttons/icon_primary_button.dart';
+import '../buttons/icon_secondary_button.dart';
 
 
 /// Application Bar
@@ -45,7 +45,7 @@ class SPDAppBar extends StatefulWidget implements PreferredSizeWidget {
   final Widget? title;
 
   /// The application bar's text style.
-  static TextStyle get textStyle => SPDFont.shared.body1.bold();
+  static TextStyle get textStyle => SPDFont.shared.bodyLarge.bold();
 
   /// The application bar's trailing widget.
   final Widget? trailing;
@@ -65,40 +65,29 @@ class SPDAppBar extends StatefulWidget implements PreferredSizeWidget {
 
 class _SPDAppBarState extends State<SPDAppBar> {
 
-  /// Return the horizontal spacing placed between each of the app bar's items.
-  double get _spacing {
-    return SPDGrid.x3;
-  }
+  /// The horizontal spacing placed between each of the app bar's items.
+  double get _spacing => SPDGrid.x3;
 
-  /// Return true it the `back` button should be displayed.
+  /// True it the `back` button should be displayed.
   bool get _showBack {
     return (widget.canPop || widget.onPop != null)
       && SPDNavigator.shared.canPop(context);
   }
 
-  /// Pop the [Route] at the top of the stack for the current [context].
+  /// Pops the [Route] at the top of the stack for the current [context].
   void _onTapBack() {
     return (widget.onPop ?? SPDNavigator.shared.pop).call(context);
   }
 
-  /// Build a horizontal spacing widget.
-  Widget _buildSpacer() {
-    return SizedBox(width: _spacing);
-  }
-
-  /// Build the application bar's `back` button.
+  /// Builds the application bar's `back` button.
   Widget _buildBack() {
-    return SPDIconPrimaryButton(
+    return SPDIconSecondaryButton(
       icon: SPDIcons.arrowleft,
-      iconSize: SPDGrid.x2, 
-      padding: SPDEdgeInsets.shared.horizontal(),
-      color: SPDColor.shared.font,
-      backgroundColor: SPDColor.shared.primary2,
       onPressed: _onTapBack,
     );
   }
 
-  /// Build the application bar's `title` widget.
+  /// Builds the application bar's `title` widget.
   Widget _buildTitle() {
     return Expanded(
       child: Center(
@@ -107,7 +96,7 @@ class _SPDAppBarState extends State<SPDAppBar> {
     );
   }
 
-  /// Build the application bar's `trailing` widget.
+  /// Builds the application bar's `trailing` widget.
   Widget _buildTrailing() {
     return Flexible(
       child: Padding(
@@ -122,10 +111,9 @@ class _SPDAppBarState extends State<SPDAppBar> {
     );
   }
 
-  /// Build the final widget.
-  /// @param [context]: The current build context.
+  /// Builds the final widget.
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return ColoredBox(
       color: SPDColor.shared.primary1,
       child: SafeArea(
@@ -139,7 +127,7 @@ class _SPDAppBarState extends State<SPDAppBar> {
               children: [
                 _showBack
                   ? _buildBack()
-                  : _buildSpacer(),
+                  : SizedBox(width: 0),
                 if (widget.title != null)
                   _buildTitle(),
                 widget.trailing != null

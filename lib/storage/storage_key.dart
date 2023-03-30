@@ -10,6 +10,7 @@ class SPDStorageKey {
   static String get screenIndex => 'screen_index';
 
   static String get accountInfoValue => 'account_info_value';
+  static String get stakeInfoValue => 'stake_info_value';
   static String get epochInfoValue => 'epoch_info_value';
   static String get solPriceValue => 'sol_price_value';
   static String get jackpotInfo => 'jackpot_info';

@@ -48,16 +48,16 @@ class AccountBalanceProvider extends SPLProvider<AccountBalanceInfo> {
 
   static final AccountBalanceProvider shared = AccountBalanceProvider._();
 
-  double? get sol => value?.sol ?? 0.0;
+  double? get sol => value?.sol;
 
-  double? get token => value?.token ?? 0.0;
+  double? get token => value?.token;
 
   double? get total {
     final double? sol = this.sol;
     final double? token = this.token;
     return sol != null && token != null ? sol + token : null;
   }
-  
+
   @override
   String get storageKey => SPDStorageKey.tokenBalanceValue;
   
@@ -73,9 +73,9 @@ class AccountBalanceProvider extends SPLProvider<AccountBalanceInfo> {
       connectedAccount,
       associatedTokenAddress(connectedAccount).publicKey
     ]);
-    print('ACCOUNT BALANCE $accountInfos');
     final AccountInfo? solAccountInfo = accountInfos[0];
     final TokenAccountInfo? tokenAccountInfo = TokenAccountInfo.tryFromAccountInfo(accountInfos[1]);
+    print('TOKEN BALANCE INFO ${tokenAccountInfo?.toJson()}');
     return AccountBalanceInfo(
       lamportsToSol(solAccountInfo?.lamports.toBigInt() ?? BigInt.zero), 
       lamportsToSol(tokenAccountInfo?.amount ?? BigInt.zero), 

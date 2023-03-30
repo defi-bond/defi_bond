@@ -9,13 +9,13 @@ import '../themes/colors/color.dart';
 /// Snackbar
 /// ------------------------------------------------------------------------------------------------
 
-class SPLSnackbar {
+class SPDSnackbar {
 
   /// Provides properties and methods for displaying snackbar messages.
-  const SPLSnackbar._();
+  const SPDSnackbar._();
 
-  /// The [SPLSnackbar] class' singleton instance.
-  static const SPLSnackbar shared = SPLSnackbar._();
+  /// The [SPDSnackbar] class' singleton instance.
+  static const SPDSnackbar shared = SPDSnackbar._();
 
   /// Show a snackbar message.
   /// @param [context]: The current build context.

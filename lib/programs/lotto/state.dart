@@ -130,7 +130,8 @@ class LottoConfig extends LottoAccount {
   const LottoConfig({
     required super.accountType,
     required this.isActive,
-    required this.epochsPerDraw, 
+    required this.epochsPerDraw,
+    required this.maxRollover, 
     required this.oddsThresholdNumerator, 
     required this.oddsThresholdDenominator, 
     required this.drawAuthority, 
@@ -143,6 +144,9 @@ class LottoConfig extends LottoAccount {
 
   /// The minimum number of epochs required between draws.
   final int epochsPerDraw;
+
+  /// The maximum number of consecutive rollovers before a winner must be chosen.
+  final int maxRollover;
 
   /// The maximum odds of a single account expressed by the percentage (0-100)
   /// `(odds_threshold_numerator/odds_threshold_denominator)*100`.
@@ -168,6 +172,7 @@ class LottoConfig extends LottoAccount {
     'account_type': borsh.enumeration(LottoAccountType.values),
     'is_active': borsh.boolean,
     'epochs_per_draw': borsh.u8,
+    'max_rollover': borsh.u8,
     'odds_threshold_numerator': borsh.u32,
     'odds_threshold_denominator': borsh.u32,
     'draw_authority': borsh.publicKey,
@@ -186,6 +191,7 @@ class LottoConfig extends LottoAccount {
     accountType: json['account_type'], 
     isActive: json['is_active'],
     epochsPerDraw: json['epochs_per_draw'], 
+    maxRollover: json['max_rollover'],
     oddsThresholdNumerator: json['odds_threshold_numerator'], 
     oddsThresholdDenominator: json['odds_threshold_denominator'], 
     drawAuthority: PublicKey.fromBase58(json['draw_authority']),
@@ -199,6 +205,7 @@ class LottoConfig extends LottoAccount {
     accountType: LottoAccountType.uninitialized, 
     isActive: false,
     epochsPerDraw: 0, 
+    maxRollover: 0,
     oddsThresholdNumerator: 0, 
     oddsThresholdDenominator: 0,
     drawAuthority: PublicKey.zero(),
@@ -210,6 +217,7 @@ class LottoConfig extends LottoAccount {
     'account_type': accountType,
     'is_active': isActive,
     'epochs_per_draw': epochsPerDraw,
+    'max_rollover': maxRollover,
     'odds_threshold_numerator': oddsThresholdNumerator,
     'odds_threshold_denominator': oddsThresholdDenominator,
     'draw_authority': drawAuthority.toBase58(),
@@ -229,11 +237,15 @@ class LottoState extends LottoProgramDerivedAccount {
     required super.authority, 
     required super.bump, 
     required this.drawId,
+    required this.rollover,
   }): assert(accountType == LottoAccountType.uninitialized 
       || accountType == LottoAccountType.state);
 
   /// The latest draw result.
   final BigInt drawId;
+
+  /// The number of consecutive rollovers.
+  final int rollover;
 
   @override
   bool get isValid => accountType == LottoAccountType.state;
@@ -246,6 +258,7 @@ class LottoState extends LottoProgramDerivedAccount {
     'authority': borsh.publicKey,
     'bump': borsh.u8,
     'draw_id': borsh.u64,
+    'rollover': borsh.u8,
   });
 
   factory LottoState.fromAccountInfo(final AccountInfo info) {
@@ -258,6 +271,7 @@ class LottoState extends LottoProgramDerivedAccount {
     authority: PublicKey.fromBase58(json['authority']),
     bump: json['bump'], 
     drawId: json['draw_id'],
+    rollover: json['rollover'],
   );
 
   static LottoState? tryFromJson(final Map<String, dynamic>? json) 
@@ -268,6 +282,7 @@ class LottoState extends LottoProgramDerivedAccount {
     authority: PublicKey.zero(),
     bump: 0,
     drawId: BigInt.zero, 
+    rollover: 0,
   );
 
   @override
@@ -276,6 +291,7 @@ class LottoState extends LottoProgramDerivedAccount {
     'authority': authority.toBase58(),
     'bump': bump,
     'draw_id': drawId,
+    'rollover': rollover,
   };
 }
 
@@ -363,6 +379,7 @@ class LottoDraw extends LottoProgramAccount {
     required this.amount,
     required this.receiverSeed, 
     required this.receiver,
+    required this.rollover,
     required this.slot,
     required this.epochStartTimestamp,
     required this.epoch,
@@ -381,6 +398,9 @@ class LottoDraw extends LottoProgramAccount {
 
   /// The winning account.
   final PublicKey receiver;
+
+  /// The rollover count at the time of this draw.
+  final int rollover;
 
   /// The network/bank slot at which the draw took place.
   final BigInt slot;
@@ -407,6 +427,7 @@ class LottoDraw extends LottoProgramAccount {
     'amount': borsh.u64,
     'receiver_seed': borsh.u64,
     'receiver': borsh.publicKey,
+    'rollover': borsh.u8,
     'slot': borsh.u64,
     'epoch_start_timestamp': borsh.i64,
     'epoch': borsh.u64,
@@ -428,6 +449,7 @@ class LottoDraw extends LottoProgramAccount {
     amount: json['amount'],
     receiverSeed: json['receiver_seed'],
     receiver: json['receiver'],
+    rollover: json['rollover'],
     slot: json['slot'],
     epochStartTimestamp: json['epoch_start_timestamp'],
     epoch: json['epoch'],
@@ -444,6 +466,7 @@ class LottoDraw extends LottoProgramAccount {
     amount: BigInt.zero,
     receiverSeed: BigInt.zero,
     receiver: PublicKey.zero(),
+    rollover: 0,
     slot: BigInt.zero,
     epochStartTimestamp: 0,
     epoch: BigInt.zero,
@@ -458,6 +481,7 @@ class LottoDraw extends LottoProgramAccount {
     'amount': amount,
     'receiver_seed': receiverSeed,
     'receiver': receiver.toBase58(),
+    'rollover': rollover,
     'slot': slot,
     'epoch_start_timestamp': epochStartTimestamp,
     'epoch': epoch,

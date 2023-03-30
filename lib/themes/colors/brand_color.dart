@@ -28,24 +28,19 @@ class SPDBrandColor extends ColorSwatch<int> {
   /// Create an [SPDBrandColor] swatch for the application's dark theme.
   factory SPDBrandColor.dark() {
     return const SPDBrandColor(
-      0xFFE61C51, {
-      1: Color(0xFFE61C51),
-      2: Color(0xFFE61C51),
+      0xFF66FFED, {
+      1: Color(0xFF66FFED),
     });
   }
 
   /// Create an [SPDBrandColor] swatch for the application's light theme.
   factory SPDBrandColor.light() {
     return const SPDBrandColor(
-      0xFFE61C51, {
-      1: Color(0xFFE61C51),
-      2: Color(0xFFE61C51),
+      0xFF66FFED, {
+      1: Color(0xFF66FFED),
     });
   }
 
   /// The lightest shade. 
   Color get shade1 => this[1]!;
-
-  /// The darkest shade.
-  Color get shade2 => this[2]!;
 }

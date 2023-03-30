@@ -3,18 +3,20 @@
 
 import 'package:flutter/material.dart';
 import 'package:solana_wallet_provider/solana_wallet_provider.dart';
-import 'package:stake_pool_lotto/themes/colors/color.dart';
 import '../../extensions/text_style.dart';
-import '../../icons/stake_pool_drops_icons.dart';
+import '../../icons/dream_drops_icons.dart';
 import '../../layouts/grid.dart';
 import '../../layouts/padding.dart';
+import '../../providers/price_provider.dart';
+import '../../themes/colors/color.dart';
 import '../../themes/fonts/font.dart';
+import '../../utils/format.dart';
 
 
 /// Wallet Card
 /// ------------------------------------------------------------------------------------------------
 
-class SPDWalletCard extends StatefulWidget {
+class SPDWalletCard extends StatelessWidget {
 
   const SPDWalletCard({
     super.key,
@@ -27,48 +29,48 @@ class SPDWalletCard extends StatefulWidget {
   final double? balance;
 
   @override
-  State<SPDWalletCard> createState() => _SPDWalletCardState();
-}
-
-
-/// Wallet Card State
-/// ------------------------------------------------------------------------------------------------
-
-class _SPDWalletCardState extends State<SPDWalletCard> {
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
+    final TextTheme textTheme = Theme.of(context).textTheme;
+    final double price = PriceProvider.shared.price;
+    final double? balance = this.balance;
     return Card(
+      margin: EdgeInsets.zero,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(SPDGrid.x2),
+      ),
       child: Padding(
         padding: SPDEdgeInsets.shared.card(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
+              mainAxisSize: MainAxisSize.max,
               children: [
                 Text(
-                  '${widget.account.label ?? "Wallet"}',
+                  '${account.label ?? "Wallet"}',
+                  style: textTheme.labelMedium?.medium(),
                 ),
                 const SizedBox(
                   width: SPDGrid.x1,
                 ),
-                Icon(
+                const Icon(
                   SPDIcons.chevrondown,
-                  size: SPDGrid.x2,
-                  color: SPDColor.shared.font,
                 ),
               ],
             ),
             const SizedBox(
               height: SPDGrid.x2,
             ),
-            Text('Total Balance'),
+            Text(
+              'Total Balance',
+              style: textTheme.labelLarge?.setColor(SPDColor.shared.secondary8),
+            ),
             const SizedBox(
-              height: 2.0,
+              height: SPDGrid.x1 * 0.5,
             ),
             Text(
-              widget.balance != null ? '\$${widget.balance}' : '-',
-              style: SPDFont.shared.headline2.medium(),
+              balance != null ? '\$${formatCurrency(balance * price)}' : '-',
+              style: SPDFont.shared.titleMedium,
             ),
           ],
         ),

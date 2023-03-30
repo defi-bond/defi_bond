@@ -2,6 +2,9 @@
 /// ------------------------------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
+import '../../icons/dream_drops_icons.dart';
+import '../../layouts/grid.dart';
+import '../../themes/colors/color.dart';
 
 
 /// Error Screen
@@ -11,21 +14,42 @@ class SPDErrorScreen extends StatelessWidget {
   
   const SPDErrorScreen({
     super.key,
-    this.exception, 
-    this.defaultText,
-    this.onTap,
-    this.actionText,
-  }): assert(defaultText == null || defaultText is String || defaultText is List<TextSpan>);
+    this.error, 
+  });
 
-  final dynamic exception;
-  final dynamic defaultText;
-  final void Function(BuildContext)? onTap;
-  final String? actionText;
+  final Object? error;
 
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('ERROR SCREEN')),
+  Widget build(final BuildContext context) {
+    final double size = SPDGrid.x8;
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox.square(
+              dimension: size, 
+              child: Material(
+                color: SPDColor.shared.font,
+                shape: CircleBorder(),
+                child: Icon(
+                  SPDIcons.exclamationmark,
+                  color: SPDColor.shared.primary1,
+                  size: size * 0.25,
+                ),
+              ),
+            ),
+            const SizedBox(
+              height: SPDGrid.x2,
+            ),
+            Center(
+              child: Text(
+                error?.toString() ?? 'Something went wrong',
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -2,15 +2,16 @@
 /// ------------------------------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
+import 'package:stake_pool_lotto/layouts/padding.dart';
+import 'package:stake_pool_lotto/themes/colors/color.dart';
+import '../discover/discover_screen.dart';
 import '../errors/404_screen.dart';
-import '../../icons/stake_pool_drops_icons.dart';
-import '../../mixin/screen_aware.dart';
-import '../../models/nav_bar_item.dart';
-import '../../observers/screen_observer.dart';
+import '../stake/stake_screen.dart';
+import '../swap/swap_screen.dart';
+import '../../icons/dream_drops_icons.dart';
 import '../../screens/home/home_screen.dart';
 import '../../storage/storage_key.dart';
 import '../../storage/user_data_storage.dart';
-import '../../widgets/bars/nav_bar.dart';
 
 
 /// Application Scaffold
@@ -35,11 +36,10 @@ class SPDAppScaffold extends StatefulWidget {
 
   /// Create an instance of this class from the given json object.
   /// @param [json]: A map containing the class' constructor parameters.
-  factory SPDAppScaffold.fromJson(Map<String, dynamic> json) {
+  factory SPDAppScaffold.fromJson(final Map<String, dynamic> json) {
     return const SPDAppScaffold();
   }
 
-  /// Create an instance of the class' state widget.
   @override
   SPDAppScaffoldState createState() => SPDAppScaffoldState();
 }
@@ -48,7 +48,7 @@ class SPDAppScaffold extends StatefulWidget {
 /// Application Scaffold State
 /// ------------------------------------------------------------------------------------------------
 
-class SPDAppScaffoldState extends State<SPDAppScaffold> with RouteAware {
+class SPDAppScaffoldState extends State<SPDAppScaffold> {
 
   /// The index position of the active screen.
   late int _index;
@@ -56,20 +56,26 @@ class SPDAppScaffoldState extends State<SPDAppScaffold> with RouteAware {
   /// The [PageView]'s scroll controller.
   late PageController _controller;
 
-  /// The screen observers that get notified when a change happens.
-  final Map<int, SPDScreenObserver> _observers = {};
+  // /// The screen observers that get notified when a change happens.
+  // final Map<int, SPDScreenObserver> _observers = {};
 
-  /// Return the storage key used to save/restore the active screens index position.
+  // final List<Widget> screens = [
+  //   const SPDHomeScreen(),
+  //   const SPDSwapScreen(),
+  //   const SPDStakeScreen(),
+  //   const SPDDiscoverScreen(),
+  // ];
+
+  /// The storage key used to save/restore the active screens index position.
   String get _storageKey {
     return SPDStorageKey.screenIndex;
   }
 
-  /// Return the [SPDUserDataStorage] singleton instance.
+  /// The [SPDUserDataStorage] singleton instance.
   SPDUserDataStorage get _prefs {
     return SPDUserDataStorage.shared;
   }
 
-  /// Initialise the widget's state.
   @override
   void initState() {
     super.initState();
@@ -77,136 +83,170 @@ class SPDAppScaffoldState extends State<SPDAppScaffold> with RouteAware {
     _controller = PageController(initialPage: _index);
   }
 
-  /// Dispose of all acquired resources.
   @override
   void dispose() {
-    SPDAppScaffold.observer.unsubscribe(this);
+    // SPDAppScaffold.observer.unsubscribe(this);
     _controller.dispose();
-    _disposeObservers();
+    // _disposeObservers();
     super.dispose();
   }
 
-  /// Dispose of all screen observer ([_observers]).
-  void _disposeObservers() {
-    for (final observer in _observers.values) {
-      observer.dispose();
-    }
-    _observers.clear();
-  }
+  // /// Dispose of all screen observer ([_observers]).
+  // void _disposeObservers() {
+  //   for (final observer in _observers.values) {
+  //     observer.dispose();
+  //   }
+  //   _observers.clear();
+  // }
 
   /// Subscribe to the [RouteObserver].
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    SPDAppScaffold.observer.subscribe(this, ModalRoute.of(context)!);
+    // SPDAppScaffold.observer.subscribe(this, ModalRoute.of(context)!);
   }
 
-  /// Called when the current route has been popped off.
-  @override
-  void didPop() {
-    _didDisappear(_index);
-  }
+  // /// Called when the current route has been popped off.
+  // @override
+  // void didPop() {
+  //   _didDisappear(_index);
+  // }
 
-  // Called when the top route has been popped off, and the current route shows up.
-  @override
-  void didPopNext() {
-    _didAppear(_index);
-  }
+  // // Called when the top route has been popped off, and the current route shows up.
+  // @override
+  // void didPopNext() {
+  //   _didAppear(_index);
+  // }
 
-  /// Called when the current route has been pushed.
-  @override
-  void didPush() {
-    _didAppear(_index);
-  }
+  // /// Called when the current route has been pushed.
+  // @override
+  // void didPush() {
+  //   _didAppear(_index);
+  // }
 
-  /// Called when a new route has been pushed, and the current route is no longer visible.
-  @override
-  void didPushNext() {
-    _didDisappear(_index);
-  }
+  // /// Called when a new route has been pushed, and the current route is no longer visible.
+  // @override
+  // void didPushNext() {
+  //   _didDisappear(_index);
+  // }
 
-  /// Notify all listeners of screen [index] that it has become the top-most view.
-  void _didAppear(int index) {
-    _observers[index]?.didAppear();
-  }
+  // /// Notifies all listeners of screen [index] that it has become the top-most view.
+  // void _didAppear(final int index) {
+  //   _observers[index]?.didAppear();
+  // }
 
-  /// Notify all listeners of screen [index] that it is no longer the top-most view.
-  void _didDisappear(int index) {
-    _observers[index]?.didDisappear();
-  }
+  // /// Notifies all listeners of screen [index] that it is no longer the top-most view.
+  // void _didDisappear(final int index) {
+  //   _observers[index]?.didDisappear();
+  // }
 
-  /// Set [_index].
-  /// @param [index]: The index position of the active item.
-  void _setIndex(int index) {
-    if (index != _index) {
-      _index = index;
+  /// Sets [_index].
+  void _setIndex(final int index) {
+    if (mounted && index != _index) {
+      setState(() => _index = index);
     }
   }
 
-  /// Save the [index] position of the active screen and notify the listeners.
-  /// @param [index]: The index position of the active screen.
-  void _onPageChanged(int index) {
-    _prefs.setInt(_storageKey, index);
-    _didDisappear(_index);
-    _didAppear(index);
+  /// Saves sthe [index] position of the active screen and notify the listeners.
+  void _onPageChanged(final int index) {
+    _prefs.setInt(_storageKey, index).ignore();
+    // _didDisappear(_index);
+    // _didAppear(index);
     _setIndex(index);
   }
 
-  /// Navigate to screen [index]. If screen [index] is the current screen, notify all listeners of 
+  /// Navigates to screen [index]. If screen [index] is the current screen, notify all listeners of 
   /// screen [index] that its navigation button has been pressed while it is already active.
-  /// @param [index]: The navigation item's index position.
-  void _onNavBarItemPressed(int index) {
-    index != _index
-      ? _controller.jumpToPage(index)
-      : _observers[index]?.didFocus();
+  void _onNavBarItemPressed(final int index) {
+    print('CONTROLLER PAGE = ${_controller.page}, INDEX $index');
+    if (index != _index) {
+      _controller.jumpToPage(index);
+    }
+    // index != _index
+    //   ? _controller.jumpToPage(index)
+    //   : _observers[index]?.didFocus();
   }
 
-  /// Return the observer for the screen at [index].
-  /// @param [index]: The screen's index position.
-  SPDScreenObserver _observer(int index) {
-    return _observers[index] ??= SPDScreenObserver();
-  }
+  // /// Returns the observer for the screen at [index].
+  // SPDScreenObserver _observer(final int index) {
+  //   return _observers[index] ??= SPDScreenObserver();
+  // }
 
-  /// Build the screen at [index].
-  /// @param [context]: The current build context.
-  /// @param [index]: The screen's index position.
-  Widget _screenBuilder(BuildContext context, int index) {
-    final SPDScreenObserver observer = _observer(index);
+  /// Builds the screen at [index].
+  Widget _screenBuilder(final BuildContext context, final int index) {
+    // final SPDScreenObserver observer = _observer(index);
+    // return index < screens.length ? screens[index] : const SPD404Screen();
     switch(index) {
       case 0:
-        return _SPLNavView(
-          observer: observer, 
-          child: const SPDHomeScreen(),
-        );
+        return const SPDHomeScreen();
+      case 1:
+        return const SPDSwapScreen();
+      case 2:
+        return const SPDStakeScreen();
+      case 3:
+        return const SPDDiscoverScreen();
       default:
         return const SPD404Screen();
     }
   }
 
-  /// Build the final widget.
-  /// @param [context]: The current build context.
+  /// Builds the final widget.
   @override
-  Widget build(BuildContext context) {
+  Widget build(final BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: PageView.builder(
-          controller: _controller,
-          itemBuilder: _screenBuilder,
-          onPageChanged: _onPageChanged,
-          physics: const NeverScrollableScrollPhysics(),
+        body: Padding(
+          padding: SPDEdgeInsets.shared.horizontal(),
+          child: PageView.builder(
+            controller: _controller,
+            itemBuilder: _screenBuilder,
+            onPageChanged: _onPageChanged,
+            physics: const NeverScrollableScrollPhysics(),
+          ),
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _index,
+          onTap: _onNavBarItemPressed,
+          selectedItemColor: SPDColor.shared.font,
+          unselectedItemColor: SPDColor.shared.primary8,
+          backgroundColor: SPDColor.shared.primary1,
+          showSelectedLabels: false,
+          showUnselectedLabels: false,
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              label: 'Home',
+              icon: Icon(SPDIcons.homefill),
+            ),
+            BottomNavigationBarItem(
+              label: 'Swap',
+              icon: Icon(SPDIcons.reverse),
+            ),
+            BottomNavigationBarItem(
+              label: 'Stake',
+              icon: Icon(SPDIcons.walletfill),
+            ),
+            BottomNavigationBarItem(
+              label: 'Discover',
+              icon: Icon(SPDIcons.discoverfill),
+            ),
+          ],
         ),
         // bottomNavigationBar: SPLNavBar(
         //   onPressed: _onNavBarItemPressed,
         //   initialIndex: _index,
         //   children: [
         //     SPDNavBarItem(
-        //       icon: SPDIcons.home,
+        //       icon: SPDIcons.homefill,
         //     ),
         //     SPDNavBarItem(
-        //       icon: SPDIcons.notification
+        //       icon: SPDIcons.reverse,
         //     ),
         //     SPDNavBarItem(
-        //       icon: SPDIcons.tick
+        //       icon: SPDIcons.walletfill,
+        //     ),
+        //     SPDNavBarItem(
+        //       icon: SPDIcons.discoverfill,
         //     ),
         //   ],
         // ),
@@ -216,53 +256,42 @@ class SPDAppScaffoldState extends State<SPDAppScaffold> with RouteAware {
 }
 
 
+// /// Navigation View
+// /// ------------------------------------------------------------------------------------------------
 
-
-class _SPLNavView extends StatefulWidget {
+// class _SPLNavView extends StatefulWidget {
   
-  const _SPLNavView({ 
-    super.key,
-    required this.observer, 
-    required this.child,
-  });
+//   const _SPLNavView({ 
+//     required this.observer, 
+//     required this.child,
+//   });
 
-  final SPDScreenObserver observer;
+//   final SPDScreenObserver observer;
 
-  final Widget child;
+//   final Widget child;
 
-  @override
-  __SPLNavViewState createState() => __SPLNavViewState();
-}
+//   @override
+//   _SPLNavViewState createState() => _SPLNavViewState();
+// }
 
-class __SPLNavViewState extends State<_SPLNavView> with SPDScreenAware {
 
-  @override
-  void initState() {
-    super.initState();
-    widget.observer.subscribe(this);
-  }
+// /// Navigation View State
+// /// ------------------------------------------------------------------------------------------------
 
-  @override
-  void dispose() {
-    widget.observer.unsubscribe(this);
-    super.dispose();
-  }
+// class _SPLNavViewState extends State<_SPLNavView> with SPDScreenAware {
 
-  @override
-  void didAppear() {
-    print("VIEW DID APPEAR: ${widget}");
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     // widget.observer.subscribe(this);
+//   }
 
-  @override
-  void didDisappear() {
-    print("VIEW DID DISAPPEAR: ${widget}");
-  }
+//   @override
+//   void dispose() {
+//     // widget.observer.unsubscribe(this);
+//     super.dispose();
+//   }
 
-  @override
-  void onNavBarItemPressed() {
-    print("NAV PRESSED: ${widget}");
-  }
-
-  @override
-  Widget build(BuildContext context) => widget.child;
-}
+//   @override
+//   Widget build(final BuildContext context) => widget.child;
+// }

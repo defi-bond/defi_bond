@@ -8,29 +8,23 @@ import '../../layouts/grid.dart';
 /// Stack View
 /// ------------------------------------------------------------------------------------------------
 
-class SPLStackView extends StatelessWidget {
+class SPDStackView extends StatelessWidget {
 
   /// Creates a view that renders its child elements ([children]) along the given [axis].
-  const SPLStackView({
+  const SPDStackView({
     super.key, 
     required this.children,
-    this.isScrollable = true,
     this.spacing = SPDGrid.x1 * 2.0,
-    this.axis = Axis.horizontal,
-    this.mainAxisSize = MainAxisSize.max,
+    this.axis = Axis.vertical,
+    this.mainAxisSize = MainAxisSize.min,
     this.mainAxisAlignment = MainAxisAlignment.center,
     this.crossAxisAlignment = CrossAxisAlignment.center,
-    this.controller,
-    this.physics,
   });
 
   /// The stack view's items.
   final List<Widget> children;
 
-  /// If true, enable scrolling (default: `true`).
-  final bool isScrollable;
-
-  /// The spacing between each item ([children]) in the stack view (default: [SPLGrid.x2]).
+  /// The spacing between each item ([children]) in the stack view (default: [SPDGrid.x2]).
   final double spacing;
 
   /// The main axis to layout the items ([children]) along (default: [Axis.horizontal]).
@@ -45,67 +39,34 @@ class SPLStackView extends StatelessWidget {
   /// The alignment along the perpendicular [axis] (default: [CrossAxisAlignment.center]).
   final CrossAxisAlignment crossAxisAlignment;
 
-  /// The [SingleChildScrollView]'s scroll controller.
-  final ScrollController? controller;
+  /// True if the [axis] == [Axis.horizontal].
+  bool get _isHorizontal => axis == Axis.horizontal;
 
-  /// The [SingleChildScrollView]'s scroll physics.
-  final ScrollPhysics? physics;
-
-  /// Return true if the [axis] == [Axis.horizontal].
-  bool get _isHorizontal {
-    return axis == Axis.horizontal;
-  }
-
-  /// Build a spacer widget.
-  Widget _buildSpacer() {
-    return _isHorizontal 
-      ? SizedBox(width: spacing) 
-      : SizedBox(height: spacing);
-  }
-
-  /// Build the items list.
-  List<Widget> _buildItems() {
-    
-    if (spacing <= 0.0 || children.isEmpty) { 
-      return children; 
+  /// Builds the items list.
+  List<Widget> _buildChildren(final Widget spacer) {
+    final List<Widget> items = [];
+    final int length = (children.length * 2) - 1;
+    for (int i = 0; i < length; ++i) {
+      items.add(i.isEven ? children[i ~/ 2] : spacer);
     }
-
-    final List<Widget> items = [children.first];
-    for (int i = 1; i < children.length; ++i) {
-      items.add(_buildSpacer());
-      items.add(children[i]);
-    }
-
     return items;
   }
 
-  /// Build the final widget.
-  /// @param [context]: The current build context.
+  /// Builds the final widget.
   @override
-  Widget build(BuildContext context) {
-
-    final Widget child = _isHorizontal 
+  Widget build(final BuildContext context) {
+    return _isHorizontal 
       ? Row(
           mainAxisSize: mainAxisSize,
           mainAxisAlignment: mainAxisAlignment,
           crossAxisAlignment: crossAxisAlignment,
-          children: _buildItems(),
+          children: _buildChildren(SizedBox(width: spacing)),
         )
       : Column(
           mainAxisSize: mainAxisSize,
           mainAxisAlignment: mainAxisAlignment,
           crossAxisAlignment: crossAxisAlignment,
-          children: _buildItems(),
+          children: _buildChildren(SizedBox(height: spacing)),
         );
-
-    return isScrollable
-      ? SingleChildScrollView(
-          scrollDirection: axis,
-          controller: controller,
-          physics: physics ?? const BouncingScrollPhysics(),
-          reverse: mainAxisAlignment == MainAxisAlignment.end,
-          child: child,
-        )
-      : child;
   }
 }

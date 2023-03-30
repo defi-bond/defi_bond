@@ -3,15 +3,13 @@
 
 enum SPDToken {
   
-  solana('Solana', 'Solana', 'SOL'),
-  stakePoolDrops('Stake Pool Drops', 'Stake Pool', 'SPD'),
+  solana('Solana', 'SOL'),
+  drop('Dream Drop', 'DDT'),
   ;
 
-  const SPDToken(this.label, this.shortLabel, this.symbol);
+  const SPDToken(this.name, this.symbol);
 
-  final String label;
-
-  final String shortLabel;
+  final String name;
 
   final String symbol;
 }

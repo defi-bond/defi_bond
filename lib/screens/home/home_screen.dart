@@ -3,15 +3,22 @@
 
 import 'package:flutter/material.dart';
 import 'package:solana_wallet_provider/solana_wallet_provider.dart';
+import 'package:stake_pool_lotto/constants.dart';
+import 'package:stake_pool_lotto/programs/stake_pool/utils.dart';
+import 'package:stake_pool_lotto/screens/scaffolds/screen_scaffold.dart';
+import 'package:stake_pool_lotto/widgets/views/connect_view.dart';
+import 'package:stake_pool_lotto/widgets/views/stack_view.dart';
 import 'package:synchronized/synchronized.dart';
+import '../../icons/dream_drops_icons.dart';
 import '../../layouts/grid.dart';
 import '../../layouts/padding.dart';
 import '../../providers/jackpot_provider.dart';
-import '../../widgets/components/jackpot.dart';
-import '../../widgets/components/wallet.dart';
 import '../../providers/provider.dart';
 import '../../providers/account_balance_provider.dart';
+import '../../themes/colors/color.dart';
 import '../../utils/snackbar.dart';
+import '../../widgets/components/jackpot.dart';
+import '../../widgets/components/wallet.dart';
 
 
 /// Home Screen
@@ -31,7 +38,7 @@ class SPDHomeScreen extends StatefulWidget {
 
   /// Create an instance of this class from the given json object.
   /// @param [json]: A map containing the class' constructor parameters.
-  factory SPDHomeScreen.fromJson(Map<String, dynamic> json)
+  factory SPDHomeScreen.fromJson(final Map<String, dynamic> json)
     => const SPDHomeScreen();
 
   /// Create an instance of the class' state widget.
@@ -45,33 +52,36 @@ class SPDHomeScreen extends StatefulWidget {
 
 class SPDHomeScreenState extends State<SPDHomeScreen> {
 
-  final Lock tokenBalanceLock = Lock();
+  bool _accountBalanceLock = false;
 
-  Future<void> _onRefreshTokenBalances() async {
+  Future<void> _onRefreshAccountBalances() async {
     try {
-      if (!tokenBalanceLock.inLock) {
+      if (!_accountBalanceLock) {
+        _accountBalanceLock = true;
         final provider = SolanaWalletProvider.of(context);
-        await tokenBalanceLock.synchronized(
-          () => Future.wait([
-            JackpotProvider.shared.update(
-              provider,
-              notifyLevel: SPLProviderStatus.error,
-            ),
+        final notifyLevel = SPLProviderStatus.error;
+        await Future.wait([
+          JackpotProvider.shared.update(
+            provider,
+            notifyLevel: notifyLevel,
+          ),
+          if (provider.adapter.isAuthorized)
             AccountBalanceProvider.shared.update(
               provider, 
-              notifyLevel: SPLProviderStatus.error,
+              notifyLevel: notifyLevel,
             ),
-          ]),
-        );
+          ]);
       }
     } catch(error) {
-      SPLSnackbar.shared.error(context, 'Failed to update balances.');
+      SPDSnackbar.shared.error(context, 'Failed to update balances.');
+    } finally {
+      _accountBalanceLock = false;
     }
   }
 
   Widget _devWarning() {
     return ColoredBox(
-      color: Colors.red,
+      color: SPDColor.shared.brand1,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -80,45 +90,47 @@ class SPDHomeScreenState extends State<SPDHomeScreen> {
               vertical: 2,
               horizontal: SPDGrid.x3,
             ),
-            child: Text('RUNNING ON DEVNET!', style: TextStyle(fontSize: 12),),
+            child: Text('DEMO APP RUNNING ON DEVNET', style: TextStyle(fontSize: 12, color: Colors.black),),
           ),
         ],
       ),
     );
   }
 
-  /// Build the final widget.
-  /// @param [context]: The current build context.
+  Widget _walletBuilder(
+    final BuildContext context, 
+    final Account account,
+  ) => SPDWallet(account: account);
+
+  /// Builds the final widget.
   @override
-  Widget build(BuildContext context) {    
-    return RefreshIndicator(
-      onRefresh: _onRefreshTokenBalances,
-      child: SafeArea(
+  Widget build(final BuildContext context) {   
+    return SPDScreenScaffold(
+      onRefresh: _onRefreshAccountBalances,
+      child: ColoredBox(
+        color: Colors.transparent,
         child: Column(
+          mainAxisSize: MainAxisSize.max,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _devWarning(),
-            Expanded(
-              child: Padding(
-                padding: SPDEdgeInsets.shared.symmetric(
-                  vertical: SPDGrid.x3,
-                  horizontal: SPDGrid.x3,
-                ),
-                child: Center(
-                  child: ScrollConfiguration(
-                    behavior: MaterialScrollBehavior().copyWith(overscroll: false),
-                    child: ListView(
-                      shrinkWrap: true,
-                      children: [
-                        const SPDJackpot(),
-                        const SizedBox(
-                          height: SPDGrid.x4,
-                        ),
-                        SPDWallet(),
-                      ],
-                    ),
-                  ),
-                ),
+            // _devWarning(),
+            Padding(
+              padding: SPDEdgeInsets.shared.vertical(),
+              child: Icon(
+                SPDIcons.logo,
+                size: SPDGrid.x4,
+                color: SPDColor.shared.brand1,
               ),
+            ),
+              
+            SPDStackView(
+              spacing: SPDGrid.x6,
+              children: [
+                const SPDJackpot(),
+                SPDConnectView(
+                  builder: _walletBuilder,
+                ),
+              ],
             ),
           ],
         ),

@@ -3,7 +3,11 @@
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:stake_pool_lotto/screens/discover/discover_screen.dart';
+import 'package:stake_pool_lotto/screens/discover/faqs_screen.dart';
 import 'package:stake_pool_lotto/screens/scaffolds/app_scaffold.dart';
+import 'package:stake_pool_lotto/screens/stake/stake_screen.dart';
+import 'package:stake_pool_lotto/screens/swap/swap_screen.dart';
 import '../navigator/navigator.dart';
 import '../routes/route_arguments.dart';
 import '../routes/route_settings.dart';
@@ -75,6 +79,14 @@ class SPDRoute {
         return const SPDAppScaffold();
       case SPDHomeScreen.routeName:
         return const SPDHomeScreen();
+      case SPDSwapScreen.routeName:
+        return const SPDSwapScreen();
+      case SPDStakeScreen.routeName:
+        return const SPDStakeScreen();
+      case SPDDiscoverScreen.routeName:
+        return const SPDDiscoverScreen();
+      case SPDFAQsScreen.routeName:
+        return const SPDFAQsScreen();
       default:
         return const SPD404Screen();
     }

@@ -22,12 +22,12 @@ extension SPDColorExtension on Color {
   }
 
   /// Returns a copy of this colour with its brightness value decreased by [value].
-  Color darken([final int value = 15]) {
+  Color darken([final int value = 10]) {
     return withBrightness(max(0, brightness - value));
   }
 
   /// Returns a copy of this colour with its brightness value increased by [value].
-  Color lighten([final int value = 15]) {
+  Color lighten([final int value = 10]) {
     return withBrightness(min(100, brightness + value));
   }
 

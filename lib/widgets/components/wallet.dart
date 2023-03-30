@@ -4,109 +4,86 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:solana_wallet_provider/solana_wallet_provider.dart';
-import 'package:stake_pool_lotto/layouts/padding.dart';
-import 'package:stake_pool_lotto/providers/price_provider.dart';
-import 'package:stake_pool_lotto/themes/colors/color.dart';
-import 'package:stake_pool_lotto/widgets/buttons/primary_button.dart';
-import '../../layouts/grid.dart';
-import '../../models/token.dart';
-import '../../navigator/navigator.dart';
-import '../../providers/account_balance_provider.dart';
-import '../../screens/staking/staking_screen.dart';
+import 'package:stake_pool_lotto/widgets/buttons/tertiary_button.dart';
 import '../cards/wallet_card.dart';
 import '../tiles/token_tile.dart';
 import '../views/stack_view.dart';
+import '../../layouts/grid.dart';
+import '../../models/token.dart';
+import '../../providers/account_balance_provider.dart';
+import '../../providers/stake_provider.dart';
+import '../../widgets/components/logo.dart';
+import '../../widgets/components/section.dart';
+import '../../widgets/components/solana_logo.dart';
 
 
 /// Wallet
 /// ------------------------------------------------------------------------------------------------
 
-class SPDWallet extends StatefulWidget {
+class SPDWallet extends StatelessWidget {
   
   const SPDWallet({
     super.key,
+    required this.account,
   });
 
-  @override
-  State<SPDWallet> createState() => _SPDWalletState();
-}
+  final Account account;
 
-
-/// Wallet State
-/// ------------------------------------------------------------------------------------------------
-
-class _SPDWalletState extends State<SPDWallet> {
-
-  void _onPressedStaking() {
-    SPDNavigator.shared.push(
-      context, 
-      builder: (context) => const SPDStakingScreen(),
-    ).ignore();
-  }
-  
   @override
   Widget build(final BuildContext context) {
-    final SolanaWalletProvider provider = SolanaWalletProvider.of(context);
-    final Account? connectedAccount = provider.connectedAccount;
     final AccountBalanceProvider accountBalanceProvider = context.watch<AccountBalanceProvider>();
+    final StakeProvider stakeProvider = context.watch<StakeProvider>();
     final double? solBalance = accountBalanceProvider.sol;
     final double? tokenBalance = accountBalanceProvider.token;
-    final double? totalBalance = accountBalanceProvider.total;
-    SPDPrimaryButton;
+    final double? stakeBalance = stakeProvider.total;
+    final double? total = solBalance != null || tokenBalance != null || stakeBalance != null
+      ? ((solBalance ?? 0) + (tokenBalance ?? 0) + (stakeBalance ?? 0)) : null;
     return Column(
       children: [
         SolanaWalletButton(
-          connectedStyle: SPDPrimaryButton.defaultNoneStyle(),
-          disconnectedStyle: SPDPrimaryButton.defaultStyle(),
-          connectedBuilder: (context, account) {
-            return SPDWalletCard(
-              account: account,
-              balance: totalBalance,
-            );
-          },
-        ),
-
-        if (connectedAccount != null)
-          const SizedBox(
-            height: SPDGrid.x4,
+          connectedStyle: SPDTertiaryButton.styleFrom(),
+          connectedBuilder: (context, account) => SPDWalletCard(
+            account: account, 
+            balance: total,
           ),
-
-        if (connectedAccount != null)
-          SPLStackView(
-            axis: Axis.vertical,
-            mainAxisSize: MainAxisSize.min,
-            spacing: SPDGrid.x4,
-            children: [
-              SPDTokenTile(
-                title: 'Available', 
+        ),
+        SizedBox(
+          height: SPDGrid.x6,
+        ),
+        SPDStackView(
+          mainAxisSize: MainAxisSize.min,
+          spacing: SPDGrid.x4,
+          children: [
+            SPDSection(
+              title: Text('Available'),
+              child: SPDTokenTile(
+                icon: SPDSolanaLogo(),
                 token: SPDToken.solana, 
                 amount: solBalance,
               ),
-              SPDTokenTile(
-                title: 'Staked', 
-                token: SPDToken.stakePoolDrops, 
-                amount: tokenBalance,
+            ),
+            SPDSection(
+              title: Text('Staked'),
+              child: Column(
+                children: [
+                  SPDTokenTile(
+                    icon: SPDLogo(),
+                    token: SPDToken.drop, 
+                    amount: tokenBalance,
+                  ),
+                  const SizedBox(
+                    height: SPDGrid.x2,
+                  ),
+                  SPDTokenTile(
+                    icon: SPDSolanaLogo(),
+                    token: SPDToken.solana, 
+                    amount: stakeBalance,
+                  ),
+                ],
               ),
-            ],
-          ),
-
-          if (connectedAccount != null)
-            const SizedBox(
-              height: SPDGrid.x4,
             ),
-
-          if (connectedAccount != null)
-            SPLStackView(
-              axis: Axis.vertical,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SPDPrimaryButton(
-                  expand: false,
-                  onPressed: _onPressedStaking,
-                  child: const Text('Staking'), 
-                ),
-              ],
-            ),
+          ],
+        ),
       ],
     );
   }

@@ -2,128 +2,123 @@
 /// ------------------------------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
-import 'package:stake_pool_lotto/layouts/padding.dart';
-import 'package:stake_pool_lotto/themes/colors/color.dart';
-import 'package:stake_pool_lotto/themes/fonts/font.dart';
 import '../../extensions/text_style.dart';
 import '../../layouts/grid.dart';
+import '../../providers/stake_provider.dart';
+import '../../themes/fonts/font.dart';
+import '../../themes/colors/color.dart';
 
 
 /// List Tile
 /// ------------------------------------------------------------------------------------------------
 
-class SPLListTile extends StatelessWidget {
+class SPDListTile extends StatelessWidget {
   
-  /// Creates a list item with an optional [leading] widget, [title] / optional [subtitle] and 
-  /// optional [trailing] widget.
-  const SPLListTile({ 
-    Key? key,
+  const SPDListTile({
+    super.key,
     this.leading,
+    this.status,
     required this.title,
+    this.titleTrailing,
     this.subtitle,
+    this.subtitleTrailing,
     this.trailing,
-    this.padding,
-    this.spacing = SPDGrid.x1 * 2.0,
-    this.onPressed,
-    this.itemExtent,
-    this.backgroundColor,
-  }): super(key: key);
+    this.onTap,
+  });
 
-  /// The optional leading widget.
   final Widget? leading;
 
-  /// The title.
+  final DelegationStatus? status;
+
   final Widget title;
 
-  /// The optional subtitle.
+  final Widget? titleTrailing;
+
   final Widget? subtitle;
 
-  /// The optional trailing widget.
+  final Widget? subtitleTrailing;
+
   final Widget? trailing;
 
-  /// The inner padding (default: [OAPadding.shared.tile()]).
-  final EdgeInsets? padding;
+  final VoidCallback? onTap;
 
-  /// The horizontal spacing between each of the widgets (default: [SPDGrid.x2]).
-  final double spacing;
+  @override
+  Widget build(final BuildContext context) {
 
-  /// The function that's called each time the widget it pressed.
-  final VoidCallback? onPressed;
-
-  /// The height.
-  final double? itemExtent;
-
-  /// The background color (default: [SPDColor.shared.primary1]).
-  final Color? backgroundColor;
-
-  /// Build the leading widget.
-  /// @param [leading]: The leading widget.
-  Widget _buildLeading(Widget leading) {
-    return Padding(
-      padding: EdgeInsets.only(right: spacing),
-      child: leading,
-    );
-  }
-
-  /// Build the centre widget.
-  /// @param [title]: The title widget.
-  /// @param [subtitle]: The subtitle widget.
-  Widget _buildTitleAndSubtitle(Widget title, Widget? subtitle) {
-
-    final Widget _title = DefaultTextStyle(
-      style: SPDFont.shared.body1.medium(), 
-      child: title,
-    );
-
-    if (subtitle == null) {
-      return _title;
+    Widget? leading = this.leading;
+    if (leading != null) {
+      final DelegationStatus? status = this.status;
+      leading = Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          leading,
+          if (status != null)
+            Container(
+              width: 8.0,
+              height: 8.0,
+              margin: EdgeInsets.only(top: 11),
+              decoration: BoxDecoration(
+                color: status.color,
+                shape: BoxShape.circle,
+              ),
+            ),
+        ],
+      );
     }
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _title,
-        subtitle, 
-      ],
-    );
-  }
-
-  /// Build the trailing widget.
-  /// @param [trailing]: The trailing widget.
-  Widget _buildTrailing(Widget trailing) {
-    return Padding(
-      padding: EdgeInsets.only(left: spacing),
-      child: trailing,
-    );
-  }
-
-  /// Build the final widget.
-  /// @param [context]: The current build context.
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: itemExtent,
-      child: Material(
-        color: backgroundColor ?? SPDColor.shared.primary1,
-        child: InkWell(
-          onTap: onPressed,
-          child: Padding(
-            padding: padding ?? SPDEdgeInsets.shared.tile(),
-            child: Row(
-              children: [
-                if (leading != null)
-                  _buildLeading(leading!),
-                Expanded(
-                  child: _buildTitleAndSubtitle(title, subtitle),
-                ),
-                if (trailing != null)
-                  _buildTrailing(trailing!),
-              ],
-            ),
+    Widget? title = this.title;
+    final Widget? titleTrailing = this.titleTrailing;
+    if (titleTrailing != null) {
+      title = Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: title,
           ),
+          const SizedBox(
+            width: SPDGrid.x2,
+          ),
+          titleTrailing,
+        ],
+      );
+    }
+
+    Widget? subtitle = this.subtitle;
+    final Widget? subtitleTrailing = this.subtitleTrailing;
+    if (subtitleTrailing != null) {
+      subtitle = Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          subtitle ?? const SizedBox.shrink(),
+          const SizedBox(
+            width: SPDGrid.x2,
+          ),
+          subtitleTrailing,
+        ],
+      );
+    }
+
+    if (subtitle != null) {
+      subtitle = Padding(
+        padding: const EdgeInsets.only(
+          top: SPDGrid.x1 * 0.5,
         ),
-      ),
+        child: DefaultTextStyle(
+          style: SPDFont.shared.labelLarge.setColor(SPDColor.shared.secondary8), 
+          child: subtitle,
+        ),
+      );
+    }
+
+    return ListTile(
+      leading: leading,
+      title: title,
+      subtitle: subtitle,
+      trailing: trailing,
+      onTap: onTap,
+      splashColor: SPDColor.shared.primary2,
     );
   }
 }

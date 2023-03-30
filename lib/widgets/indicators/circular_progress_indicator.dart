@@ -35,20 +35,17 @@ class SPDCircularProgressIndicator extends StatelessWidget {
   final double? value;
 
   /// Build the final widget.
-  /// @param [context]: The current build context.
   @override
   Widget build(BuildContext context) {
     final double strokeWidthRadius = strokeWidth * 0.5;
     final double radius = this.radius ?? SPDGrid.x3;
-    return Center(
-      child: SizedBox.fromSize(
-        size: Size.fromRadius(radius - strokeWidthRadius),
-        child: CircularProgressIndicator(
-          value: value,
-          strokeWidth: strokeWidth,
-          color: colour ?? SPDColor.shared.brand,
-          backgroundColor: SPDColor.shared.primary,
-        ),
+    return SizedBox.fromSize(
+      size: Size.fromRadius(radius - strokeWidthRadius),
+      child: CircularProgressIndicator(
+        value: value,
+        strokeWidth: strokeWidth,
+        color: colour ?? SPDColor.shared.brand,
+        backgroundColor: SPDColor.shared.primary,
       ),
     );
   }

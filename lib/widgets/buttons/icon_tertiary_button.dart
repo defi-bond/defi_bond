@@ -2,42 +2,28 @@
 /// ------------------------------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
-import 'package:stake_pool_lotto/mixin/tertiary_button_style.dart';
-import 'package:stake_pool_lotto/widgets/buttons/icon_button.dart';
-import '../../layouts/grid.dart';
+import '../buttons/tertiary_button.dart';
+import '../../widgets/buttons/icon_button.dart';
 
 
 /// Icon Tertiary Button
 /// ------------------------------------------------------------------------------------------------
 
-class SPDIconTertiaryButton extends SPLIconButton with SPDTertiaryButtonStyle {
+class SPDIconTertiaryButton extends SPLIconButton {
   
-  /// Create an icon button with no background or border edge.
-  const SPDIconTertiaryButton({
-    Key? key,
-    Widget? child,
-    required IconData? icon,
-    double? iconSize,
-    required VoidCallback? onPressed,
-    VoidCallback? onPressedDisabled,
-    FocusNode? focusNode,
-    bool autofocus = false,
-    bool enabled = true,
-    EdgeInsets? padding,
-    double? minHeight,
-    Color? color,
-  }) : super(
-        key: key,
-        child: child,
-        icon: icon,
-        iconSize: iconSize ?? SPDGrid.x1,
-        onPressed: onPressed,
-        onPressedDisabled: onPressedDisabled,
-        focusNode: focusNode,
-        autofocus: autofocus,
-        enabled: enabled,
-        targetPadding: padding,
-        minHeight: minHeight ?? SPDGrid.x1 * 2.0,
-        color: color,
-      );
+  /// Creates an icon button with no background or border edge.
+  SPDIconTertiaryButton({
+    super.key,
+    super.child,
+    required super.icon,
+    super.iconSize,
+    required super.onPressed,
+    super.onPressedDisabled,
+    super.focusNode,
+    super.autofocus,
+    super.enabled,
+    final ButtonStyle? style,
+  }): super(
+    style: style ?? SPDTertiaryButton.styleFrom()
+  );
 }

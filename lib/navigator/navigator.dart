@@ -7,7 +7,6 @@ import 'navigator_result.dart';
 import 'navigator_transition.dart';
 import '../routes/route_arguments.dart';
 import '../routes/route_settings.dart';
-import '../screens/errors/fatal_error_screen.dart';
 import '../screens/permissions/permission_screen.dart';
 
 
@@ -25,21 +24,6 @@ class SPDNavigator {
   /// Return true if the [Route] at the top of the stack can be popped.
   bool canPop(BuildContext context) {
     return Navigator.canPop(context);
-  }
-
-  /// Replace the current route with the [SPDFatalErrorScreen].
-  /// @param [context]: The build context.
-  /// @param [error]: The error to display to the user.
-  @optionalTypeArgs
-  Future<SPDNavigatorResult<T>?> fatalError<T extends Object, TO extends Object>(
-    BuildContext context, {
-    dynamic error,
-  }) {
-    return pushReplacement<T, TO>(
-      context, 
-      builder: (_) => SPDFatalErrorScreen(exception: error),
-      arguments: SPDRouteArguments(transition: SPDNavigatorTransition.vertical),
-    );
   }
 
   /// Push the [SSPPermissionScreen] onto the stack.

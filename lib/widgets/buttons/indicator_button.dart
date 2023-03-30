@@ -2,10 +2,9 @@
 /// ------------------------------------------------------------------------------------------------
 
 import 'package:flutter/material.dart';
-import 'package:stake_pool_lotto/utils/duration.dart';
-import '../../layouts/grid.dart';
-import '../painters/animated_indicator_painter.dart';
 import 'primary_button.dart';
+import '../painters/animated_indicator_painter.dart';
+import '../../utils/duration.dart';
 
 
 /// Indicator Button
@@ -15,7 +14,7 @@ class SPDIndicatorButton extends StatefulWidget {
 
   /// Creates a button that transition between an [SPDPrimaryButton] and progress indicator. Set 
   /// [showIndicator] equal to `true` for a progress indicator and `false` for a primary button.
-  const SPDIndicatorButton({
+  SPDIndicatorButton({
     super.key,
     required this.child,
     required this.onPressed,
@@ -24,11 +23,9 @@ class SPDIndicatorButton extends StatefulWidget {
     this.autofocus = false,
     this.enabled = true,
     this.expand = false,
-    this.padding,
+    final ButtonStyle? style,
     this.targetPadding,
-    this.minHeight,
-    this.color,
-  });
+  }): style = style ?? SPDPrimaryButton.styleFrom();
 
   /// The button's main content.
   final Widget? child;
@@ -40,7 +37,7 @@ class SPDIndicatorButton extends StatefulWidget {
   /// Controls whether or not the widget has keyboard focus to handle keyboard events.
   final FocusNode? focusNode;
 
-  /// If `true`, render the progress indicator. Else, render the [SPLPrimaryButton].
+  /// If `true`, render the progress indicator. Else, render the [SPDPrimaryButton].
   final bool showIndicator;
 
   /// If `true`, the widget will try to obtain focus when it's first loaded (default: `false`).
@@ -52,20 +49,12 @@ class SPDIndicatorButton extends StatefulWidget {
   /// If `true`, fill the available width.
   final bool expand;
 
-  /// The button's inner padding (default [OAPadding.shared.horizontal()]).
-  final EdgeInsets? padding;
+  /// Button style.
+  final ButtonStyle? style;
 
   /// The button's outer padding, used to increase its target area.
   final EdgeInsets? targetPadding;
 
-  /// The button's minimum height (default: [SPLGrid.x6]).
-  final double? minHeight;
-
-  /// The button's border and content color. This will override the default 
-  /// [ButtonStyle.foregroundColor] property defined by [style].
-  final Color? color;
-
-  /// Create an instance of the class' state widget.
   @override
   SPDIndicatorButtonState createState() => SPDIndicatorButtonState();
 }
@@ -91,10 +80,10 @@ class SPDIndicatorButtonState extends State<SPDIndicatorButton> with TickerProvi
   /// The animation that transforms the indicator's appearance.
   late Animation<double> _transformAnimation;
 
-  /// Return the button's minimum height.
-  double get _minHeight {
-    return widget.minHeight ?? SPDGrid.x6;
-  }
+  // /// Return the button's minimum height.
+  // Size get _minSize {
+  //   return widget.style?.m ?? const Size.square(SPDGrid.x1 * 6.0);
+  // }
 
   /// Initialise the widget's state.
   @override
@@ -171,17 +160,15 @@ class SPDIndicatorButtonState extends State<SPDIndicatorButton> with TickerProvi
 
   /// Build the button widget.
   /// @param [minHeight]: The button's height.
-  Widget _buildButton({ required final double minHeight }) {
+  Widget _buildButton() {
     return SPDPrimaryButton(
       onPressed: widget.onPressed,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
       enabled: widget.enabled,
       expand: widget.expand,
-      padding: widget.padding,
+      style: widget.style,
       targetPadding: widget.targetPadding,
-      minHeight: minHeight,
-      backgroundColor: widget.color,
       child: widget.child,
     );
   }
@@ -194,8 +181,8 @@ class SPDIndicatorButtonState extends State<SPDIndicatorButton> with TickerProvi
       painter: SPDAnimatedIndicatorPainter(
         animation: _translateController,
         transformValue: _transformAnimation.value,
-        color: widget.color,
-        borderRadius: _minHeight * 0.5,
+        color: widget.style?.backgroundColor?.resolve({}),
+        borderRadius: (widget.style?.minimumSize?.resolve({})?.shortestSide ?? 0.0) * 0.5,
       ),
     );
   }
@@ -203,15 +190,14 @@ class SPDIndicatorButtonState extends State<SPDIndicatorButton> with TickerProvi
   /// Build the final widget.
   /// @param [context]: The current build context.
   @override
-  Widget build(BuildContext context) {
-    final double minHeight = _minHeight;
+  Widget build(final BuildContext context) {
+    final Size? minimumSize = widget.style?.minimumSize?.resolve({});
     return Stack(
       alignment: Alignment.center,
       clipBehavior: Clip.hardEdge,
       children: [
-        SizedBox(
-          width: minHeight,
-          height: minHeight,
+        SizedBox.fromSize(
+          size: minimumSize,
         ),
         Positioned.fill(
           child: AnimatedBuilder(
@@ -224,7 +210,7 @@ class SPDIndicatorButtonState extends State<SPDIndicatorButton> with TickerProvi
           child: SizeTransition(
             axis: Axis.horizontal,
             sizeFactor: _sizeAnimation,
-            child: _buildButton(minHeight: minHeight),
+            child: _buildButton(),
           ),
         ),
       ],

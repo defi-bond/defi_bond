@@ -19,19 +19,20 @@ class SPDFadeAndSizeSwitcher extends AnimatedSwitcher {
     Axis axis = Axis.vertical,
     double axisAlignment = 0.0,
   }): super(
-        key: key,
+    key: key,
+    child: child,
+    duration: duration ?? SPDDuration.normal,
+    transitionBuilder: (
+      final Widget child, 
+      final Animation<double> animation,
+    ) => SizeTransition(
+      axis: axis,
+      axisAlignment: axisAlignment,
+      sizeFactor: animation,
+      child: FadeTransition(
+        opacity: animation,
         child: child,
-        duration: duration ?? SPDDuration.normal,
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return SizeTransition(
-            axis: axis,
-            axisAlignment: axisAlignment,
-            sizeFactor: animation,
-            child: FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
-          );
-        }
-      );
+      ),
+    ),
+  );
 }
