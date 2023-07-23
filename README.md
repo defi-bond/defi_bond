@@ -1,4 +1,4 @@
-# stake_pool_lotto
+# defi_bond
 
 A new Flutter project.
 
